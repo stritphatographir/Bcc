@@ -42,6 +42,8 @@ class Client:
             {"role": "user", "content": json.dumps(data, ensure_ascii=False)},
         ]
         payload = {"model": self.settings.model, "temperature": 0, "messages": messages}
+        if self.settings.disable_thinking:
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
         key = hashlib.sha256(json.dumps([self.settings.base_url, payload]).encode()).hexdigest()
         path = self.settings.cache_dir / (key + ".json")
         try:

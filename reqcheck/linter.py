@@ -39,7 +39,10 @@ def lint(sources: list[Source], requirements: list[Requirement]) -> list[Finding
                 add("empty-section", "Полнота", "major", [source], f"Раздел «{section}» пуст.",
                     "Добавить согласованные условия или явно указать неприменимость.",
                     f"Какие условия должны быть записаны в разделе «{section}»?")
-        if re.search(r"\b(?:TBD|TODO|заполняются|не заполнен|не проставлены)\b|:\s*—\s*(?:\||$)|\|\s*—\s*\|\s*$", body, re.I):
+        if re.search(
+            r"\b(?:TBD|TODO|заполняются|не заполнен|не проставлены)\b|:\s*—\s*(?:\||$)|"
+            r"^\|[^|]+\|\s*—\s*\|\s*$", body, re.I,
+        ):
             add("placeholder", "Полнота", "major", [source], f"В разделе «{section}» осталось поле шаблона.",
                 "Заполнить поле согласованным значением и указать ответственного.",
                 f"Какое значение и кто утверждает для незаполненного поля раздела «{section}»?")
@@ -58,7 +61,8 @@ def lint(sources: list[Source], requirements: list[Requirement]) -> list[Finding
                 "В какой единице сравниваются суммы и как округляются дробные значения?")
 
     for index, source in enumerate(sources):
-        if not re.search(r"\|\s*(?:REST type|HTTP(?: method)?|метод)\s*\|\s*GET\s*\|", source.text, re.I):
+        table = re.sub(r"[*`]", "", source.text)
+        if not re.search(r"\|\s*(?:REST type|HTTP(?: method)?|метод)\s*\|\s*GET\s*\|", table, re.I):
             continue
         for neighbor in sources[max(0, index - 4):index + 8]:
             if neighbor.section == source.section and re.search(r"сохранени|сохраняет|/(?:save|create|update|delete)", neighbor.text, re.I):

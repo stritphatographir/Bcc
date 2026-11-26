@@ -12,6 +12,7 @@ class Settings:
     model: str
     cache_dir: Path = Path(".cache/reqcheck")
     timeout: float = 40
+    disable_thinking: bool = False
 
     @classmethod
     def from_env(cls):
@@ -28,4 +29,5 @@ class Settings:
         return cls(
             base, os.getenv("LLM_API_KEY") or (gemini_key if gemini else None) or "local",
             model, timeout=float(os.getenv("REQCHECK_TIMEOUT", "40")),
+            disable_thinking=os.getenv("REQCHECK_DISABLE_THINKING") == "1",
         )
