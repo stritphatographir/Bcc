@@ -10,13 +10,28 @@ def _identity(finding: Finding):
             tuple(sorted(" ".join(evidence.quote.split()) for evidence in finding.evidence)))
 
 
+def _locators(finding: Finding):
+    return tuple(sorted((e.locator, " ".join(e.quote.split())) for e in finding.evidence))
+
+
 def changes(old: list[Finding], new: list[Finding]) -> tuple[list[Finding], list[Finding], int]:
+    stable = defaultdict(deque)
+    for index, finding in enumerate(old):
+        stable[_identity(finding), _locators(finding)].append(index)
+    same = set()
+    moved_or_new = []
+    for finding in new:
+        exact = stable[_identity(finding), _locators(finding)]
+        if exact:
+            same.add(exact.popleft())
+        else:
+            moved_or_new.append(finding)
     remaining = defaultdict(deque)
     for index, finding in enumerate(old):
-        remaining[_identity(finding)].append(index)
-    same = set()
+        if index not in same:
+            remaining[_identity(finding)].append(index)
     added = []
-    for finding in new:
+    for finding in moved_or_new:
         candidates = remaining[_identity(finding)]
         if candidates:
             same.add(candidates.popleft())

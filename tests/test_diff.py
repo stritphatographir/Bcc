@@ -15,3 +15,11 @@ def test_diff_matches_a_moved_quote_and_keeps_duplicate_occurrences():
     assert [item.evidence[0].quote for item in missing] == ["быстро", "удобно"]
     assert [item.evidence[0].quote for item in added] == ["своевременно"]
     assert present == 1
+
+
+def test_diff_prefers_a_stable_locator_when_two_quotes_match():
+    old = [make("быстро", "1"), make("быстро", "2")]
+    new = [make("быстро", "2")]
+    missing, added, retained = changes(old, new)
+    assert [entry.evidence[0].locator for entry in missing] == ["1"]
+    assert not added and retained == 1
