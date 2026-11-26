@@ -74,7 +74,9 @@ function fillArtifacts(event) {
     field.dataset.id = question.id;
     field.dataset.question = question.text;
     field.value = event.analysis.answers.find(answer => answer.question.id === question.id)?.text ?? "";
-    label.append(element("small", question.finding_ids.join(", ")), field);
+    label.append(element("small", question.finding_ids.join(", ")));
+    for (const related of question.related ?? []) label.append(element("small", "Также: " + related));
+    label.append(field);
     questionList.append(label);
   }
   if (recheck.hidden) questionList.append(element("p", "Вопросов по подтверждённым дефектам нет."));
