@@ -21,6 +21,7 @@ from .qa import QA, build_qa
 from .quality import Quality, score_quality
 from .segmenter import Requirement, segment
 from .simulator import Simulation, simulate
+from .structure import review_structure
 from .trace import TraceEvent, TraceLog
 from .verifier import verify
 
@@ -93,7 +94,8 @@ def analyze(path: Path, settings: Settings, *,
         if incomplete:
             failed.append("Сегментация")
         step("Проверка правил", requirements=len(requirements))
-        rules = lint(sources, requirements) + review_fintech(sources, requirements) + review_api(sources, requirements)
+        rules = (lint(sources, requirements) + review_fintech(sources, requirements)
+                 + review_api(sources, requirements) + review_structure(sources, requirements))
         step("Проверка требований и связей", findings=len(rules))
         issues, failed_reviews = review(sources, requirements, client, votes=settings.critic_votes)
         failed.extend(failed_reviews)
