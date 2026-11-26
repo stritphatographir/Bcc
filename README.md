@@ -134,6 +134,23 @@ pytest
 Как считать полноту и точность по эталону — в `eval/README.md`
 (команда `python -m eval.score`).
 
+## Экспорт и сравнение версий
+
+```bash
+python -m reqcheck export reports/report.json -o reports/review
+python -m reqcheck diff specs/old.md specs/new.md -o reports/diff.md
+```
+
+Экспорт создаёт DOCX и выгрузки Jira в CSV и JSON. CSV можно загрузить через импорт
+Jira с сопоставлением полей. В JSON сохранены поля задачи для интеграции.
+Для сравнения можно передать готовые JSON-отчёты и повторно использовать результаты.
+Сравнение связывает выводы по критерию и цитате, включая перемещённые строки.
+
+GitHub Actions проверяет изменённые спецификации в `specs/` и `examples/`.
+Отчёты доступны в артефакте `requirements-review`. Правила работают без ключа.
+Для прогона модели задайте переменные `REQCHECK_LLM_BASE_URL`, `REQCHECK_LLM_MODEL`
+и секрет `REQCHECK_LLM_API_KEY` в настройках репозитория.
+
 ---
 
 ## English (short)

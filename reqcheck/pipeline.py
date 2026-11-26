@@ -67,6 +67,7 @@ def analyze(path: Path, settings: Settings, *,
             progress: Callable[[str], None] = lambda _: None,
             collect: Callable[[list[Question]], list[Answer]] = lambda _: []) -> Analysis:
     started = datetime.now(timezone.utc)
+    version = _version()
     trace = TraceLog()
     active_stage = None
     stage_start = None
@@ -131,7 +132,7 @@ def analyze(path: Path, settings: Settings, *,
         mode = "Частичная проверка" if failed else "Полная проверка"
     passport = Passport(
         document=path.name, sha256=digest, model=settings.model,
-        provider=urlsplit(settings.base_url).hostname or "", version=_version(),
+        provider=urlsplit(settings.base_url).hostname or "", version=version,
         started=started, finished=datetime.now(timezone.utc), calls=client.calls,
         cache_hits=client.hits, dropped=dropped, failed_agents=failed, mode=mode,
     )

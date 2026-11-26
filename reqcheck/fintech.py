@@ -78,4 +78,22 @@ def review_fintech(sources: list[Source], requirements: list[Requirement]) -> li
             stakeholder=check.stakeholder, agent="fintech",
             requirements=[r.id for r in requirements if r.source.locator == source.locator],
         ))
+    goals = [s for s in sources if not s.heading and s.section and re.search(r"цел[ьи]|goal", s.section[-1], re.I)
+             and re.search(r"узна|уведом|оповещ", s.text, re.I)
+             and re.search(r"\bв момент\b|\bсразу после\b", s.text, re.I)]
+    deadlines = [s for s in sources if not s.heading and s.section and
+                 re.search(r"нефункциональн|\bnfr\b|\bsla\b", s.section[-1], re.I) and
+                 re.search(r"уведом|оповещ|сообщен|\bpush\b", s.text, re.I) and
+                 re.search(r"(?:в течение|не позднее|не более)\s+.{0,20}?(?:секунд|минут|час)", s.text, re.I)]
+    if len(goals) == len(deadlines) == 1 and goals[0].section[:-1] == deadlines[0].section[:-1]:
+        locators = {goals[0].locator, deadlines[0].locator}
+        findings.append(Finding(
+            code="goal-delay", criterion="Согласованность", severity="major",
+            evidence=[Evidence(locator=s.locator, quote=s.text) for s in [goals[0], deadlines[0]]],
+            explanation="Цель обещает уведомление в момент события, а требование допускает задержку отправки.",
+            fix="Согласовать срок до получения уведомления и указать начальное и конечное события измерения.",
+            question="Какую задержку допускает бизнес-цель, и измеряем отправку или получение уведомления?",
+            stakeholder="Владелец продукта", agent="fintech",
+            requirements=[r.id for r in requirements if r.source.locator in locators],
+        ))
     return findings

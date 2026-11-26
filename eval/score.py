@@ -51,11 +51,25 @@ def score(golden: Path, report: Path, decisions: Path) -> Score:
     return Score(len(hits), len(defects), len(positives), len(negatives), misses, len(findings))
 
 
+def render_ablation(report: Path, ablation: Path) -> str:
+    data = json.loads(ablation.read_text(encoding="utf-8"))
+    if data["report_sha256"] != hashlib.sha256(report.read_bytes()).hexdigest():
+        raise ValueError("Таблица ablation относится к другому отчёту.")
+    lines = ["| Профиль | Recall | Precision | Оценённые выводы |", "| --- | --- | --- | --- |"]
+    for row in data["profiles"]:
+        labeled = row["true_positives"] + row["false_positives"]
+        recall = f"{row['matched_defects']}/{data['total_defects']}"
+        precision = f"{row['true_positives']}/{labeled}"
+        lines.append(f"| {row['name']} | {recall} | {precision} | {labeled}/{row['total_findings']} |")
+    return "\n".join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Recall по совпадению места и смысла дефекта")
     parser.add_argument("--report", type=Path, default=Path("reports/report.json"))
     parser.add_argument("--golden", type=Path, default=Path("eval/golden_defects.md"))
     parser.add_argument("--decisions", type=Path, default=Path("eval/adjudication.json"))
+    parser.add_argument("--ablation", type=Path, help="Таблица измерений для выбранного отчёта")
     args = parser.parse_args()
     try:
         result = score(args.golden, args.report, args.decisions)
@@ -71,6 +85,15 @@ def main():
     print(f"Оценено выводов: {labeled}/{result.total_findings}")
     for miss in result.misses:
         print(f"- {miss}")
+    ablation = args.ablation
+    default_ablation = Path("eval/ablation.json")
+    if ablation is None and args.report == Path("reports/report.json") and default_ablation.is_file():
+        ablation = default_ablation
+    if ablation:
+        try:
+            print("\n" + render_ablation(args.report, ablation))
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            parser.error(str(exc))
 
 
 if __name__ == "__main__":

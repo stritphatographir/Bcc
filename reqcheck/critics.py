@@ -1,3 +1,4 @@
+import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
@@ -98,6 +99,29 @@ def review(sources: list[Source], requirements: list[Requirement], client: Clien
             "Для каждого вывода нужны две точные цитаты, по одной для каждой стороны.",
             {"source": [item.model_dump() for item in behavior], "answers": answers or []},
         ))
+        policy = [source for source in sources if any(re.search(
+            r"цел[ьи]|архитектур|sequence|нефункциональн|требования к данным|nfr|objective", section, re.I,
+        ) for section in source.section)]
+        focused = {source.locator for source in behavior + policy}
+        jobs.append((
+            "Полнота состояний и данных", "set",
+            "Рассмотри только неполные условия работы. Проверь исходное значение каждой настройки, "
+            "поведение при отключённой функции или смене состояния, неподдерживаемые типы и значения, "
+            "обязательность взаимозависимых полей, сохранение состояния и связность описания данных. "
+            "Не повторяй технические замечания к HTTP и формату документа. "
+            "Для каждого пропуска приведи точную цитату, которая вводит состояние или поле.",
+            {"source": [item.model_dump() for item in sources if item.locator in focused],
+             "answers": answers or []},
+        ))
+        if policy:
+            jobs.append((
+                "Связность целей, сроков и терминов", "set",
+                "Сопоставь обещанный результат в целях и допустимую задержку в эксплуатационных "
+                "требованиях. Сравни названия одного компонента в архитектуре и последовательности. "
+                "Опиши только конкретные расхождения, которые меняют критерий приёмки или границу "
+                "ответственности. Цитируй обе стороны каждого расхождения.",
+                {"source": [item.model_dump() for item in policy], "answers": answers or []},
+            ))
 
     def ballot(job, attempt):
         _, scope, prompt, data = job

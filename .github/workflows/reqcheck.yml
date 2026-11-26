@@ -1,0 +1,55 @@
+name: Review changed requirements
+
+on:
+  pull_request:
+    paths:
+      - 'specs/**'
+      - 'examples/**'
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Review changed specifications
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          LLM_BASE_URL: ${{ vars.REQCHECK_LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.REQCHECK_LLM_MODEL }}
+          LLM_API_KEY: ${{ secrets.REQCHECK_LLM_API_KEY }}
+          REQCHECK_CRITIC_VOTES: '1'
+        run: |
+          if [[ -z "$LLM_BASE_URL" || -z "$LLM_MODEL" || -z "$LLM_API_KEY" ]]; then
+            export LLM_BASE_URL=http://127.0.0.1:1/v1
+            export LLM_MODEL=rules-only
+            export REQCHECK_TIMEOUT=2
+          fi
+          index=0
+          while IFS= read -r -d '' spec; do
+            case "${spec,,}" in
+              *.md|*.txt|*.pdf|*.docx|*.html|*.htm)
+                if [[ -f "$spec" && ! -L "$spec" ]]; then
+                  index=$((index + 1))
+                  python -m reqcheck "$spec" -o "pr-reports/report-$index.md"
+                fi
+                ;;
+            esac
+          done < <(git diff --name-only --diff-filter=ACMR -z "$PR_BASE...$PR_HEAD" -- specs examples)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: requirements-review
+          path: pr-reports/
+          if-no-files-found: ignore
