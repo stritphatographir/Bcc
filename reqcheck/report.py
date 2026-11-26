@@ -162,16 +162,36 @@ def render_markdown(result: Analysis) -> str:
             out.extend(finding_lines(f"U-{index:03}", finding))
 
     out.extend(["", "## Вердикт", ""])
-    if counts["critical"] or counts["major"]:
-        out.append("Полную разработку и тестирование следует начинать после устранения дефектов, влияющих на поведение и приёмку.")
-    elif p.failed_agents or not result.requirements:
-        out.append("Для решения о начале разработки и тестирования требуется полная проверка документа.")
+    blocked = sorted({ref for f in result.findings if f.severity == "critical" for ref in f.requirements})
+    weak = sorted({ref for f in result.findings if f.severity == "major" for ref in f.requirements} - set(blocked))
+    if not result.requirements:
+        development = testing = "нельзя — требования не выделены"
+    elif counts["critical"]:
+        development = f"нельзя — {counts['critical']} критических дефектов меняют поведение системы"
+        testing = "нельзя — для требований с критическими дефектами нельзя однозначно задать ожидаемый результат"
+    elif counts["major"]:
+        development = "условно — только по требованиям без существенных дефектов"
+        testing = "условно — тест-кейсы можно писать только для требований без существенных дефектов"
     else:
-        out.append("Разработку и проектирование тестов можно начинать по проверенным требованиям.")
+        development = testing = "можно"
+    out.extend([f"- **Начинать разработку:** {development}.", f"- **Начинать тестирование:** {testing}."])
+    if blocked:
+        out.append("- Требования с критическими дефектами — " + literal(", ".join(blocked)))
+    if weak:
+        out.append("- Требования с существенными дефектами — " + literal(", ".join(weak)))
+    if p.failed_agents or p.mode != "Полная проверка":
+        out.append("- Решение предварительное: часть проверок не выполнена (см. паспорт).")
     if ranked:
         out.extend(["", "Первоочередные правки", ""])
-        for index, finding in ranked[:3]:
+        seen = set()
+        for index, finding in ranked:
+            place = " ".join(finding.evidence[0].quote.split())[:60]
+            if finding.severity == "minor" or place in seen:
+                continue
+            seen.add(place)
             out.append(f"- **{finding_id(index)}** · {literal(finding.fix)}")
+            if len(seen) == 5:
+                break
 
     if result.quality.requirements:
         quality = result.quality
