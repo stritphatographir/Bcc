@@ -11,9 +11,29 @@ def parser():
 
 
 def main():
-    args = parser()
-    args.parse_args()
-    args.error("Обработка документов ещё не подключена.")
+    import sys
+
+    from .clarifier import terminal_answers
+    from .config import Settings
+    from .pipeline import analyze
+    from .report import write
+
+    command = parser()
+    args = command.parse_args()
+    destinations = {args.output, args.output.with_suffix(".html"), args.output.with_suffix(".json")}
+    if args.input.resolve() in {path.resolve() for path in destinations}:
+        command.error("Входной файл совпадает с одним из файлов отчёта.")
+    try:
+        options = {"collect": terminal_answers} if args.interactive else {}
+        result = analyze(
+            args.input, Settings.from_env(),
+            progress=lambda stage: print(stage, file=sys.stderr, flush=True), **options,
+        )
+        paths = write(result, args.output)
+    except (ValueError, OSError) as exc:
+        command.error(str(exc))
+    for path in paths:
+        print(path)
 
 
 if __name__ == "__main__":
