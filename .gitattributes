@@ -1,0 +1,5 @@
+/examples/*.md text eol=lf
+/reports/*.md text eol=lf
+/reports/*.html text eol=lf
+/reports/*.json text eol=lf
+/reports/*.jsonl text eol=lf
