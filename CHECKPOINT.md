@@ -1,11 +1,11 @@
 # CHECKPOINT
 
-Updated: 2026-11-27 00:01 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-27 00:11 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Next queue item: 17.1 (simulator). Item 9 quality gate remains open at 17/30 recall (56.7%), 53/62 reviewed precision (85.5%), 62/84 reviewed. Rules-only recall 5/30. Continue tuning after each change that affects findings.
+- Next queue item: 17.2 (test cases). Pending one- and three-vote scoring and report refresh for 17.1, 17.5, 17.6 and 17.7. Item 9 quality gate remains open at 17/30 recall (56.7%), 53/62 reviewed precision (85.5%), 62/84 reviewed. Rules-only recall 5/30. Continue tuning after each change that affects findings.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
@@ -54,3 +54,6 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 13. Local FastAPI demo uploads a document, streams agent stages, and displays or downloads the full report. Offline API tests pass.
 - 14. Reviewed the report with Argon, fixed evidence in summaries and questions, and generated MD, HTML and JSON using a warmed Qwen cache. Cold compact-Qwen sample: 540 seconds, 16 API calls. Latest report: 66 requirements, 84 findings, 4 dropped, 15 cache hits, no failed checks.
 - 15. Added a three-minute demo script, five-minute defense outline and jury Q&A.
+- 17.1. Typed scenario simulator, independent review and regression tests. Model extraction quality varied on both specs; aligned rule/acceptance pass and score refresh pending.
+- 17.5. Majority voting with distinct prompts, confidence and post-vote quote verification. Three-vote run in progress.
+- 17.6 and 17.7. Fintech and API checks with verified quotes and scoped regression tests. Live score refresh in progress.

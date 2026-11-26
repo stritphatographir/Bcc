@@ -41,6 +41,8 @@ def mocked(request):
     system = json.loads(request.content)["messages"][0]["content"]
     if "Выдели" in system:
         content = '{"requirements": []}'
+    elif "таблицу решений" in system:
+        content = '{"rules": [], "cases": []}'
     elif "согласованность и осуществимость" in system:
         issue = {
             "criterion": "Проверяемость",

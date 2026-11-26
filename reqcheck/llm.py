@@ -23,6 +23,7 @@ class Client:
         self.http = httpx.Client(transport=transport, timeout=settings.timeout)
         self.calls = 0
         self.hits = 0
+        self.responses = 0
         self._lock = threading.Lock()
 
     def __enter__(self):
@@ -53,6 +54,7 @@ class Client:
         else:
             with self._lock:
                 self.hits += 1
+                self.responses += 1
             return value
         for attempt in range(1, 4):
             try:
@@ -78,6 +80,8 @@ class Client:
                 reason = type(exc).__name__
                 messages[0]["content"] = instructions + "\nПредыдущий ответ не прошёл проверку. Проверь типы полей."
             else:
+                with self._lock:
+                    self.responses += 1
                 try:
                     path.parent.mkdir(parents=True, exist_ok=True)
                     with tempfile.NamedTemporaryFile(

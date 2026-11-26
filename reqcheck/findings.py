@@ -20,3 +20,4 @@ class Finding(BaseModel):
     requirements: list[str] = Field(default_factory=list)
     scope: Literal["requirement", "set"] = "set"
     agent: str = "linter"
+    confidence: float | None = Field(default=None, ge=0, le=1)

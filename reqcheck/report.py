@@ -1,3 +1,4 @@
+import json
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -14,8 +15,9 @@ def literal(text: str) -> str:
 
 
 def finding_lines(identifier: str, finding: Finding) -> list[str]:
+    confidence = f" · согласие {finding.confidence:.0%}" if finding.confidence is not None else ""
     return [
-        f"**{identifier} · {literal(finding.criterion)} · {LABEL[finding.severity]}**",
+        f"**{identifier} · {literal(finding.criterion)} · {LABEL[finding.severity]}{confidence}**",
         "",
         *[f"> **{literal(e.locator)}** · {literal(e.quote)}" for e in finding.evidence],
         "",
@@ -93,6 +95,18 @@ def render_markdown(result: Analysis) -> str:
         out.extend(finding_lines(identifier, finding))
     if not set_findings:
         out.extend(["В выполненных проверках набора подтверждённых дефектов нет.", ""])
+
+    if result.simulation.scenarios:
+        out.extend(["## Моделирование сценариев", "",
+                    f"Правил со сверенными цитатами — {len(result.simulation.rules)}. "
+                    f"Отклонено записей таблицы — {result.simulation.dropped}.", "",
+                    "| Сценарий | Условия | Результат |", "| --- | --- | --- |"])
+        states = {"covered": "Покрыт", "conflict": "Противоречие", "uncovered": "Нет результата"}
+        for scenario in result.simulation.scenarios:
+            facts = json.dumps(scenario.facts, ensure_ascii=False)
+            source = f" · {scenario.evidence.locator}" if scenario.evidence else " · синтетический"
+            out.append(f"| {literal(scenario.label + source)} | {literal(facts)} | {states[scenario.status]} |")
+        out.append("")
 
     counts = Counter(f.severity for f in result.findings)
     ranked = sorted(enumerate(result.findings), key=lambda row: PRIORITY[row[1].severity])

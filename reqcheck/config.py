@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 
@@ -13,6 +14,7 @@ class Settings:
     cache_dir: Path = Path(".cache/reqcheck")
     timeout: float = 40
     disable_thinking: bool = False
+    critic_votes: int = 1
 
     @classmethod
     def from_env(cls):
@@ -26,8 +28,13 @@ class Settings:
         model = os.getenv("LLM_MODEL") or ("" if gemini else "swift-1.5-iq3_s")
         if not model:
             raise ValueError("Укажите LLM_MODEL для Gemini.")
+        local = urlsplit(base).hostname == "monster-server" and model == "swift-1.5-iq3_s"
+        votes = int(os.getenv("REQCHECK_CRITIC_VOTES", "3" if local else "1"))
+        if votes < 1:
+            raise ValueError("REQCHECK_CRITIC_VOTES должен быть положительным числом.")
         return cls(
             base, os.getenv("LLM_API_KEY") or (gemini_key if gemini else None) or "local",
-            model, timeout=float(os.getenv("REQCHECK_TIMEOUT", "40")),
-            disable_thinking=os.getenv("REQCHECK_DISABLE_THINKING") == "1",
+            model, timeout=float(os.getenv("REQCHECK_TIMEOUT", "150" if local else "40")),
+            disable_thinking=os.getenv("REQCHECK_DISABLE_THINKING", "1" if local else "0") == "1",
+            critic_votes=votes,
         )

@@ -7,6 +7,7 @@ from .findings import Evidence, Finding
 from .llm import Client, LLMError
 from .loader import Source
 from .segmenter import Requirement
+from .simulator import behavior_sources
 
 
 class Issue(BaseModel):
@@ -47,8 +48,32 @@ LENSES = {
 }
 
 
+def vote(ballots: list[list[Finding] | None]) -> list[Finding]:
+    buckets = {}
+    for ballot in ballots:
+        seen = set()
+        for finding in ballot or []:
+            key = (
+                " ".join(finding.criterion.casefold().split()),
+                tuple(sorted((e.locator, " ".join(e.quote.split())) for e in finding.evidence)),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            buckets.setdefault(key, []).append(finding)
+    results = []
+    severity = {"minor": 0, "major": 1, "critical": 2}
+    for group in buckets.values():
+        if len(group) * 2 <= len(ballots):
+            continue
+        ranked = sorted(group, key=lambda f: severity[f.severity])
+        exemplar = ranked[(len(ranked) - 1) // 2]
+        results.append(exemplar.model_copy(update={"confidence": len(group) / len(ballots)}))
+    return results
+
+
 def review(sources: list[Source], requirements: list[Requirement], client: Client,
-           answers: list[dict] | None = None) -> tuple[list[Finding], list[str]]:
+           answers: list[dict] | None = None, *, votes: int = 1) -> tuple[list[Finding], list[str]]:
     source_data = [source.model_dump() for source in sources]
     jobs = [(name, "set", prompt, {"source": source_data, "answers": answers or []})
             for name, prompt in LENSES.items()]
@@ -62,9 +87,26 @@ def review(sources: list[Source], requirements: list[Requirement], client: Clien
             "Учитывай соседние атомарные фрагменты одной строки.",
             {"requirements": [item.model_dump() for item in batch], "answers": answers or []},
         ))
+    behavior = behavior_sources(sources)
+    if behavior and len(behavior) < len(sources):
+        jobs.append((
+            "Согласованность поведения и приёмки", "set",
+            "Сопоставь каждое бизнес-правило с другими правилами и с ожидаемым результатом "
+            "каждого приёмочного примера. Пошагово вычисли результат там, где вход задан. "
+            "Сравни границу периода и выбор даты события, повтор после смены настройки, "
+            "условия запуска и исключения. Ищи только конфликты или дублирование правил. "
+            "Для каждого вывода нужны две точные цитаты, по одной для каждой стороны.",
+            {"source": [item.model_dump() for item in behavior], "answers": answers or []},
+        ))
 
-    def run(job):
+    def ballot(job, attempt):
         _, scope, prompt, data = job
+        if attempt:
+            variants = (
+                "Сначала сопоставь исходные цитаты, затем оцени по заданным критериям.",
+                "Сначала проверь условия и наблюдаемый результат, затем запиши выводы по заданным критериям.",
+            )
+            prompt += f"\nНезависимая проверка {attempt + 1}. " + variants[(attempt - 1) % len(variants)]
         try:
             result = client.ask(prompt + "\n" + INSTRUCTIONS, data, Review)
         except LLMError:
@@ -80,6 +122,14 @@ def review(sources: list[Source], requirements: list[Requirement], client: Clien
                 scope=scope if ids else "set", agent="critic",
             ))
         return findings
+
+    def run(job):
+        ballots = [ballot(job, index) for index in range(votes)]
+        if sum(result is not None for result in ballots) * 2 <= votes:
+            return None
+        if votes == 1:
+            return ballots[0]
+        return vote(ballots)
 
     with ThreadPoolExecutor(max_workers=3) as pool:
         results = list(pool.map(run, jobs))
