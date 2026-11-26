@@ -31,3 +31,11 @@ def test_first_fixes_do_not_repeat_the_same_quote():
     ids = [line.split("**")[1] for line in fixes.splitlines() if line.startswith("- **")]
     quotes = [result.findings[int(i.split("-")[1]) - 1].evidence[0].quote for i in ids]
     assert 1 < len(ids) <= 5 and len(set(quotes)) == len(quotes)
+
+
+def test_russian_plural():
+    from reqcheck.report import plural
+
+    forms = ("дефект", "дефекта", "дефектов")
+    assert [plural(n, *forms) for n in (1, 2, 5, 11, 12, 21, 22, 25, 101, 111)] == [
+        "дефект", "дефекта", "дефектов", "дефектов", "дефектов", "дефект", "дефекта", "дефектов", "дефект", "дефектов"]

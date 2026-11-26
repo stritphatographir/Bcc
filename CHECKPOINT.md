@@ -1,13 +1,13 @@
 # CHECKPOINT
 
-Updated: 2026-11-27 01:00 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-27 01:40 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
 - Queue 9–17 complete. Final report scored 23/30 recall (76.7%) and 67/76 reviewed precision (88.2%), with 76/100 findings adjudicated.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
-- Session 2026-11-27 (Claude): jury-readiness pass, items 18–19 below.
+- Session 2026-11-27 (Claude): jury-readiness pass, items 18–21 below.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
 ## Queue (in order)
@@ -32,6 +32,8 @@ Updated: 2026-11-27 01:00 Almaty. Owner of this file: the conductor.
    Re-run items 9 and 14 after each feature that changes findings.
 18. Jury run path: Gemini default provider and model, 429/5xx backoff, fail-fast offline mode, honest passport counts.
 19. Explicit §6 verdict (development / testing yes-no-conditional) and de-duplicated first fixes.
+20. Clarifier: merge paraphrased questions, route by citations, cap --interactive.
+21. Structure checks without LLM: happy-path-only diagrams (G27), rule duplicated across sections (G30).
 
 ## Conductor task id
 
@@ -71,3 +73,5 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - Final verification: 41 offline tests in a clean venv, PDF fallback, full-model SSE API, browser Q&A and highlights, export/diff smoke checks, workflow YAML and Bash syntax, and secret-prefix history scan. Gemini runtime, hosted GitHub Actions and visual DOCX rendering remain unverified.
 - 18. Gemini is now the default (`gemini-3.8-flash`, verified on ai.google.dev models page 2026-11-27); `.env.example` needs only GEMINI_API_KEY. 429/5xx retried up to REQCHECK_MAX_RETRIES with Retry-After or 2/4/8 s backoff; REQCHECK_CONCURRENCY (2 on Gemini). ConnectError, 401/403/404 or invalid key stop all further calls (1 request instead of 47 on the offline PDF run). Passport shows successful responses and the reason the model was unavailable. Old report JSON still loads.
 - 19. Verdict states «Начинать разработку / тестирование» with critical and major requirement IDs; first fixes skip repeated quotes (five distinct defects on the sample). 43 offline tests pass (web tests need fastapi, not installable in that sandbox). Committed reports/ left as generated at 6f4e3d1; regenerate with Gemini for submission.
+- 20. Clarifier groups findings by complete linkage on cited quotes (Jaccard >= 0.5) so a shared context line cannot chain topics; primary finding leads unless its question is rhetorical; other wordings kept as `related` («Также:») in MD and web UI. Saved report: 99 questions -> 66, all 99 wordings kept; «Аналитик» share 78% -> 50%. Routing by criterion, question and quotes. `--interactive` asks top REQCHECK_INTERACTIVE_LIMIT (8). Report states question count, blocking questions, Russian plurals.
+- 21. `reqcheck/structure.py`: both rules hit G27 and G30 on MD and PDF with verified quotes; 0 findings on merchant-settlement (generality check). Expected recall after the next full run: 25/30 if LLM findings hold; must be re-adjudicated (eval binds to report hash). 50 offline tests. Remaining LLM-only misses: G14, G15, G20, G21, G23 — prompt work needs a live model to evaluate, not attempted blind.

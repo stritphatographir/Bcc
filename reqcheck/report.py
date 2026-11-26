@@ -41,6 +41,14 @@ def critical_category(finding: Finding) -> str:
     return "Другие критические дефекты"
 
 
+
+def plural(count: int, one: str, few: str, many: str) -> str:
+    """Russian noun agreement: 1 дефект, 2 дефекта, 5 дефектов, 21 дефект."""
+    tail = count % 100
+    if 11 <= tail <= 14:
+        return many
+    return {1: one, 2: few, 3: few, 4: few}.get(count % 10, many)
+
 def render_markdown(result: Analysis) -> str:
     p = result.passport
     out = [
@@ -134,6 +142,17 @@ def render_markdown(result: Analysis) -> str:
         out.extend(["Подтверждённых критических дефектов в выполненных проверках нет.", ""])
 
     out.extend(["## Уточняющие вопросы", ""])
+    if result.questions:
+        linked = sum(len(item.finding_ids) for item in result.questions)
+        blocking = [item.id for item in result.questions if item.priority == "critical"]
+        out.append(f"Вопросов — {len(result.questions)}, они закрывают {linked} "
+                   f"{plural(linked, 'дефект', 'дефекта', 'дефектов')}. "
+                   "Дефекты с одинаковыми цитатами объединены в один вопрос.")
+        if blocking:
+            one = len(blocking) == 1
+            out.append(("Блокирует разработку — " if one else "Блокируют разработку — ") + ", ".join(blocking)
+                       + (". Ответьте на него первым." if one else ". Ответьте на них первыми."))
+        out.append("")
     grouped = defaultdict(list)
     by_id = {finding_id(index): finding for index, finding in enumerate(result.findings)}
     for item in result.questions:
@@ -148,6 +167,7 @@ def render_markdown(result: Analysis) -> str:
                 for ref in item.finding_ids if ref in by_id for e in by_id[ref].evidence
             )
             out.extend(f"  - {literal(locator)} · «{literal(quote)}»" for locator, quote in quotes)
+            out.extend(f"  - Также: {literal(text)}" for text in item.related)
         out.append("")
     if not grouped:
         out.extend(["Вопросов по подтверждённым дефектам нет.", ""])
@@ -167,7 +187,9 @@ def render_markdown(result: Analysis) -> str:
     if not result.requirements:
         development = testing = "нельзя — требования не выделены"
     elif counts["critical"]:
-        development = f"нельзя — {counts['critical']} критических дефектов меняют поведение системы"
+        n = counts["critical"]
+        development = (f"нельзя — {n} {plural(n, 'критический дефект меняет', 'критических дефекта меняют', 'критических дефектов меняют')} "
+                       "поведение системы")
         testing = "нельзя — для требований с критическими дефектами нельзя однозначно задать ожидаемый результат"
     elif counts["major"]:
         development = "условно — только по требованиям без существенных дефектов"
