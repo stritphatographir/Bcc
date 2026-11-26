@@ -64,12 +64,33 @@ Orchestrator runs agents with bounded concurrency. Add a small web UI (FastAPI o
 9. Tests: `pytest` green, offline (LLM mocked), covers loader, segmenter pre-pass, linter, verifier, report rendering.
 10. Run time on the sample under 5 min with Gemini Flash class model; graceful degradation (linter-only report) if the LLM is unreachable, marked as such in the passport.
 
+## Outstanding features (goal: 1st place, not "complete")
+
+Build these after the core passes the checklist. Each must be generic (works on any fintech spec), visible in the demo, and covered by a test.
+
+1. **Spec simulator ("агент тестирует ТЗ")**: an agent extracts the business rules into a decision table (conditions, actions, units, time rules), generates edge-case scenarios (boundaries, month/day rollover, time zones, refunds, retries, duplicates, state changes mid-period), and evaluates every acceptance criterion and scenario against the rules. Mismatches become critical findings with the scenario as proof. This is the headline feature.
+2. **Generated test cases**: for each requirement, Gherkin scenarios (positive, negative, boundary) and a list of requirements that cannot get a test case (= unverifiable). QA value.
+3. **Corrected spec**: a rewritten version of every defective requirement plus a diff view; after `--interactive` answers, the rewrite uses the answers.
+4. **Traceability matrix**: goal → functional req → acceptance criterion → API/data → test case, with gaps highlighted.
+5. **Self-consistency voting**: run critics N times (default 3 on the free local model, 1 on paid models) and keep findings by vote; show a confidence per finding. Verifier runs after the vote.
+6. **Fintech domain pack**: a pluggable checklist critic for banking concerns (money units and rounding, currency, time zones and cut-off, idempotency and retries, refunds and reversals, PII/PCI and card data, audit log, rollback, limits, regulatory notes). Generic, not document-specific.
+7. **API contract critic**: HTTP method semantics, status code coverage vs. described responses, request/response type consistency, auth, error model.
+8. **Quality scores**: per requirement and per ISO 29148 criterion, a readiness gauge "можно начинать разработку / тестирование", and charts in the HTML report.
+9. **Web UI for the demo**: upload, live agent timeline (SSE), the source document with findings highlighted inline (click a finding: scroll to the quote), Q&A panel that triggers a recheck, tabs for test cases, traceability, corrected spec. Polished, Russian, dark/light.
+10. **Agent trace**: JSONL trace of each agent step (inputs, outputs, timings, tokens, cache hits) and a trace view in the UI. Architecture judges see the agents work.
+11. **Benchmark**: `python -m eval.score` reports recall and precision on the golden set plus an ablation table (linter only, + critics, + simulator, + voting, + verifier). Put the measured table in the README.
+12. **Integrations**: Jira-ready CSV/JSON export of findings, a GitHub Action that runs reqcheck on spec changes in a PR, DOCX export of the report.
+13. **Version diff**: `reqcheck diff old.md new.md` shows which defects were fixed and which are new.
+
 ## Swarm rules
 
-- Conductor: Codex `gpt-6.2-sol` medium. Fallback order on quota or failure: `antigravity` `gemini-4-neon` medium, then `opencode` `local-qwen/swift-1.5-iq3_s`.
-- Workers: one question or one bounded item each, file list given, answer limit 15 lines.
-  Mechanical patches: `codex` `gpt-6.1-sol` low. Research or eval reading: `antigravity_2` `gemini-4-hydrogen` medium (one at a time). Chores and log summaries: `opencode` local Qwen.
-- Checker: a different family than the author. Codex work by `antigravity` `gemini-4-argon` medium. At most 2 fix rounds.
+- Pools for this project: the GTA6 project is using both Gemini accounts (`antigravity`, `antigravity_2`) in parallel. Do not use them here, except the Checker exception below.
+- **Use local Qwen (`opencode` / `local-qwen/swift-1.5-iq3_s`) as much as possible: it is free and unlimited.** It is weak at reasoning, so give it small, fully specified tasks and verify its output (tests, diff review) before committing.
+  Good Qwen jobs: write tests from a spec, write docs drafts, translate RU/EN, generate the second sample spec, run eval and summarize results, mechanical edits with exact instructions, HTML/CSS polish with a clear spec, log reading.
+- Conductor: Codex `gpt-6.2-sol` medium. Fallback on quota or failure: `opencode` local Qwen as conductor for small items only, and write the quota reset time to CHECKPOINT.md.
+- Code workers: `codex` `gpt-6.1-sol` low/medium for patches Qwen cannot do. Tricky logic (simulator, voting, verifier): `gpt-6.2-sol` medium.
+- Workers: one bounded item each, file list given, answer limit 15 lines. Run up to 3 Qwen workers in parallel on different files.
+- Checker: Codex work reviewed by `codex` `gpt-6.2-astra` medium. Exception: one cross-family review by `antigravity` `gemini-4-argon` medium before the final report run. At most 2 fix rounds.
 - Two workers never write the same file. Only the conductor edits `AGENTS.md` and `CHECKPOINT.md`.
 - Claude is rationed: do not delegate to Claude models unless the user asks.
 - No paid credits (DeepSeek) without the user's approval. Do not use `opencode/seaglass-alpha-free` for project data.

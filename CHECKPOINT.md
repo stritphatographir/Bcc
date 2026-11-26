@@ -26,6 +26,13 @@ Updated: 2026-11-26 23:42 Almaty. Owner of this file: the conductor.
 13. Web UI for the demo.
 14. Generate reports/report.md (+ html, json) for the sample and commit it.
 15. Demo script and slide outline in docs/demo.md.
+16. Set up .venv (pytest currently fails: bs4 missing outside a venv); finish uncommitted eval/score.py.
+17. Outstanding features from AGENTS.md, in this order: 1 simulator, 5 voting, 6 fintech pack, 7 API critic, 2 test cases, 3 corrected spec, 4 traceability, 8 scores, 9 web UI, 10 trace, 11 benchmark, 12 integrations, 13 diff.
+   Re-run items 9 and 14 after each feature that changes findings.
+
+## Conductor task id
+
+(set by the conductor thread)
 
 ## Quota / reset log
 
