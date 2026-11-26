@@ -1,6 +1,6 @@
 # CHECKPOINT
 
-Updated: 2026-11-26 23:56 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-26 23:57 Almaty. Owner of this file: the conductor.
 
 ## State
 
@@ -51,3 +51,4 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 10. Offline tests now exercise the CLI end to end, including all three outputs and linter-only fallback.
 - 11. Russian quick start and short English guide, provider/key setup, CLI, and Mermaid architecture.
 - 12. Added a merchant-settlement sample with cutoff, FX, and duplicate payment cases. Live generality run in progress.
+- 13. Local FastAPI demo uploads a document, streams agent stages, and displays or downloads the full report. Offline API tests pass.

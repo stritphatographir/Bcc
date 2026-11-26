@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Проверка требований</title>
+  <link rel="stylesheet" href="/assets/workbench.css">
+  <script type="module" src="/assets/workbench.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Проверка требований</h1>
+      <p>Дефекты спецификации, точные цитаты и вопросы к владельцам требований.</p>
+    </header>
+    <div class="workspace">
+      <aside aria-label="Запуск проверки">
+        <form id="upload">
+          <label for="document">Документ требований</label>
+          <input id="document" name="document" type="file" accept=".pdf,.docx,.md,.txt,.html,.htm" required>
+          <small>PDF, DOCX, Markdown, TXT или HTML до 8 МБ</small>
+          <button id="start" type="submit">Запустить проверку</button>
+        </form>
+        <section aria-labelledby="progress-title">
+          <h2 id="progress-title">Этапы проверки</h2>
+          <p id="status" role="status">Выберите документ для проверки.</p>
+          <ol id="stages"></ol>
+        </section>
+      </aside>
+      <section class="result" aria-labelledby="result-title">
+        <div class="result-header">
+          <h2 id="result-title">Отчёт</h2>
+          <div id="downloads" hidden>
+            <button type="button" data-format="md">Markdown</button>
+            <button type="button" data-format="html">HTML</button>
+            <button type="button" data-format="json">JSON</button>
+          </div>
+        </div>
+        <p id="placeholder">Результат появится после проверки документа.</p>
+        <iframe id="report" title="Отчёт о проверке требований" sandbox hidden></iframe>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
