@@ -6,6 +6,7 @@ def parser():
     result = argparse.ArgumentParser(description="Агент проверки требований")
     result.add_argument("input", type=Path, help="Входной документ")
     result.add_argument("-o", "--output", type=Path, required=True, help="Файл отчёта")
+    result.add_argument("--interactive", action="store_true", help="Задать уточняющие вопросы в терминале")
     return result
 
 
