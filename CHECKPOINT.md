@@ -1,11 +1,11 @@
 # CHECKPOINT
 
-Updated: 2026-11-26 23:57 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-27 00:00 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Next queue item: 9. Scorer and tests ready. Rules-only baseline 5/30 recall (16.7%), reviewed precision 21/21. Live Qwen report still running.
+- Next queue item: 15. Item 9 quality gate remains open at 17/30 recall (56.7%), 53/62 reviewed precision (85.5%), 62/84 reviewed. Rules-only recall 5/30. Continue tuning after each change that affects findings.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
@@ -50,5 +50,6 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 16. Repaired .venv with Windows Python 3.13 wheels. Dependency install and offline tests pass. Finished the inherited scorer implementation in item 9.
 - 10. Offline tests now exercise the CLI end to end, including all three outputs and linter-only fallback.
 - 11. Russian quick start and short English guide, provider/key setup, CLI, and Mermaid architecture.
-- 12. Added a merchant-settlement sample with cutoff, FX, and duplicate payment cases. Live generality run in progress.
+- 12. Added a merchant-settlement sample with cutoff, FX, and duplicate payment cases. Live Qwen confirmed cutoff, duplicate payment and FX date conflicts (209 seconds, 11 API calls).
 - 13. Local FastAPI demo uploads a document, streams agent stages, and displays or downloads the full report. Offline API tests pass.
+- 14. Reviewed the report with Argon, fixed evidence in summaries and questions, and generated MD, HTML and JSON using a warmed Qwen cache. Cold compact-Qwen sample: 540 seconds, 16 API calls. Latest report: 66 requirements, 84 findings, 4 dropped, 15 cache hits, no failed checks.
