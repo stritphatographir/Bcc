@@ -17,6 +17,7 @@ from .linter import lint
 from .llm import Client, LLMError
 from .loader import load
 from .qa import QA, build_qa
+from .quality import Quality, score_quality
 from .segmenter import Requirement, segment
 from .simulator import Simulation, simulate
 from .verifier import verify
@@ -46,6 +47,7 @@ class Analysis(BaseModel):
     follow_up: list[Finding] = Field(default_factory=list)
     simulation: Simulation = Field(default_factory=Simulation)
     qa: QA = Field(default_factory=QA)
+    quality: Quality = Field(default_factory=Quality)
 
 
 def _version() -> str:
@@ -118,5 +120,7 @@ def analyze(path: Path, settings: Settings, *,
         cache_hits=client.hits, dropped=dropped, failed_agents=failed, mode=mode,
     )
     qa = build_qa(requirements, findings, simulation, sources, follow_up)
+    quality = score_quality(requirements, findings, failed)
     return Analysis(passport=passport, requirements=requirements, findings=findings,
-                    questions=items, answers=answers, follow_up=follow_up, simulation=simulation, qa=qa)
+                    questions=items, answers=answers, follow_up=follow_up, simulation=simulation, qa=qa,
+                    quality=quality)

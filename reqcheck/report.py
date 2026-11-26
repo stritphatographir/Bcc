@@ -1,6 +1,7 @@
 import json
 import re
 from collections import Counter, defaultdict
+from html import escape
 from pathlib import Path
 
 from markdown_it import MarkdownIt
@@ -8,6 +9,7 @@ from markdown_it import MarkdownIt
 from .clarifier import LABEL, PRIORITY, finding_id
 from .findings import Finding
 from .pipeline import Analysis
+from .quality import Quality
 
 
 def literal(text: str) -> str:
@@ -168,6 +170,22 @@ def render_markdown(result: Analysis) -> str:
         for index, finding in ranked[:3]:
             out.append(f"- **{finding_id(index)}** · {literal(finding.fix)}")
 
+    if result.quality.requirements:
+        quality = result.quality
+        out.extend(["", "## Показатели качества", "",
+                    f"Индекс по найденным дефектам — {quality.score} из 100.",
+                    "Штраф на требование по критерию — 40 за критический дефект, "
+                    "15 за существенный, 5 за незначительный. Учитывается наибольший штраф.",
+                    "Нулевое число нарушений у критерия показывает результат проведённых проверок.", ""])
+        if quality.partial:
+            out.extend(["Индекс предварительный. Часть проверок недоступна.", ""])
+        out.extend(["| Критерий ISO 29148 | Требований с нарушением |", "| --- | --- |"])
+        for criterion, count in quality.affected_criteria.items():
+            out.append(f"| {criterion} | {count} |")
+        out.extend(["", "| Требование | Балл из 100 |", "| --- | --- |"])
+        for requirement, score in quality.requirements.items():
+            out.append(f"| {requirement} | {score} |")
+
     if result.qa.trace:
         out.extend(["", "## Сценарии тестирования", ""])
         kinds = {"positive": "Позитивный", "negative": "Негативный", "boundary": "Граничный"}
@@ -203,11 +221,29 @@ h1,h2,h3{line-height:1.2}h2{margin-top:2rem;border-top:1px solid #d9e6e1;padding
 p,li,td,th{line-height:1.55;overflow-wrap:anywhere}
 table{width:100%;border-collapse:collapse}td,th{text-align:left;border-bottom:1px solid #d9e6e1;padding:.5rem}
 th{background:#e9f3ee}blockquote{margin:1rem 0;padding:.3rem .9rem;border-left:3px solid #187967;background:#edf5f1}
+.quality{display:grid;gap:.45rem;margin-block:1.4rem;padding:1rem;border:1px solid #c9dbd4}
+meter{width:min(100%,30rem);height:1.25rem}
+.quality dl{display:grid;grid-template-columns:minmax(10rem,1fr) minmax(4rem,2fr);gap:.3rem .65rem;margin:0}
+.quality dd{margin:0}
 """
 
 
-def render_html(markdown: str) -> str:
+def render_html(markdown: str, quality: Quality | None = None) -> str:
     content = MarkdownIt("commonmark", {"html": False}).enable("table").render(markdown)
+    if quality and quality.score is not None:
+        states = {"blocked": "Сначала устранить блокирующие дефекты",
+                  "incomplete": "Нужна полная проверка", "ready": "Можно начать разработку и тестирование"}
+        maximum = max(1, len(quality.requirements))
+        rows = "".join(
+            f'<dt>{escape(name)}</dt><dd><meter aria-label="{escape(name)}" min="0" max="{maximum}" value="{count}">'
+            f'{count}</meter> {count}</dd>'
+            for name, count in quality.affected_criteria.items()
+        )
+        block = (f'<section class="quality" aria-label="Показатели качества"><strong>{states[quality.readiness]}</strong>'
+                 f'<label for="quality-score">Индекс по найденным дефектам — {quality.score} из 100</label>'
+                 f'<meter id="quality-score" min="0" max="100" value="{quality.score}">{quality.score}</meter>'
+                 f"<dl>{rows}</dl></section>")
+        content = content.replace("<h2>Показатели качества</h2>", "<h2>Показатели качества</h2>" + block, 1)
     return (
         '<!doctype html><html lang="ru"><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -223,6 +259,6 @@ def write(result: Analysis, output: Path) -> tuple[Path, Path, Path]:
         raise ValueError("Укажите файл Markdown для параметра --output.")
     markdown = render_markdown(result)
     output.write_text(markdown, encoding="utf-8")
-    html.write_text(render_html(markdown), encoding="utf-8")
+    html.write_text(render_html(markdown, result.quality), encoding="utf-8")
     data.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
     return output, html, data

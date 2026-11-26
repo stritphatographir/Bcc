@@ -52,8 +52,28 @@ li::marker { color: var(--muted); font-variant-numeric: tabular-nums; }
 #downloads button { font-size: .875rem; }
 #placeholder { margin: 1.3rem; }
 iframe { display: block; width: 100%; height: min(75vh, 58rem); border: 0; }
+#views { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding: .6rem .8rem; gap: .35rem; }
+#views button[aria-pressed="true"] { background: var(--accent); color: var(--button); border-color: var(--accent); }
+.content-view { padding: 1.15rem; overflow-x: auto; }
+.content-view h3 { margin-block: 1.1rem .45rem; }
+.content-view pre { overflow: auto; white-space: pre-wrap; background: var(--paper); padding: .85rem; line-height: 1.5; }
+.content-view table { width: 100%; border-collapse: collapse; }
+.content-view td, .content-view th { text-align: left; padding: .55rem; border-bottom: 1px solid var(--line); }
+.source-view { display: grid; grid-template-columns: minmax(9rem, .8fr) minmax(0, 1.6fr); }
+#findings, #source-lines { max-height: 65vh; overflow: auto; padding: .8rem; }
+#findings { border-inline-end: 1px solid var(--line); }
+#findings button { width: 100%; text-align: start; margin-bottom: .4rem; overflow-wrap: anywhere; }
+#source-lines p { padding: .35rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+#source-lines span { color: var(--muted); margin-inline-end: .65rem; font-size: .8rem; }
+mark { background: #ffe393; color: #312410; }
+#question-list { display: grid; gap: 1rem; }
+#question-list label { display: grid; gap: .4rem; }
+textarea { width: 100%; resize: vertical; min-height: 3.5rem; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); padding: .6rem; font: inherit; }
+#recheck { justify-self: start; margin-block-start: .65rem; }
 @media (max-width: 690px) {
   .workspace { grid-template-columns: minmax(0, 1fr); }
   aside { border-inline-end: 0; border-bottom: 1px solid var(--line); }
   .result { min-height: 14rem; }
+  .source-view { grid-template-columns: minmax(0, 1fr); }
+  #findings { max-height: 10rem; border-inline-end: 0; border-bottom: 1px solid var(--line); }
 }

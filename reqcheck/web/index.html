@@ -37,7 +37,26 @@
           </div>
         </div>
         <p id="placeholder">Результат появится после проверки документа.</p>
-        <iframe id="report" title="Отчёт о проверке требований" sandbox hidden></iframe>
+        <nav id="views" aria-label="Разделы проверки" hidden>
+          <button type="button" data-view="report" aria-pressed="true">Отчёт</button>
+          <button type="button" data-view="source" aria-pressed="false">Источник</button>
+          <button type="button" data-view="questions" aria-pressed="false">Вопросы</button>
+          <button type="button" data-view="test-cases" aria-pressed="false">Тесты</button>
+          <button type="button" data-view="trace" aria-pressed="false">Трассировка</button>
+          <button type="button" data-view="rewrites" aria-pressed="false">Правки</button>
+        </nav>
+        <iframe id="report" class="view" title="Отчёт о проверке требований" sandbox hidden></iframe>
+        <div id="source" class="view source-view" hidden>
+          <div id="findings" aria-label="Дефекты"></div>
+          <div id="source-lines" tabindex="0" aria-label="Текст документа"></div>
+        </div>
+        <form id="questions" class="view content-view" hidden>
+          <div id="question-list"></div>
+          <button id="recheck" type="submit">Перепроверить с ответами</button>
+        </form>
+        <div id="test-cases" class="view content-view" hidden></div>
+        <div id="trace" class="view content-view" hidden></div>
+        <div id="rewrites" class="view content-view" hidden></div>
       </section>
     </div>
   </main>
