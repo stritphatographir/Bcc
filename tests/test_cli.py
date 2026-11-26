@@ -67,6 +67,7 @@ def test_full_run_writes_three_files(tmp_path, monkeypatch, capsys):
     document, output = run_cli(tmp_path, monkeypatch, httpx.MockTransport(mocked))
     for path in (output, output.with_suffix(".html"), output.with_suffix(".json")):
         assert path.is_file()
+        assert b"\r\n" not in path.read_bytes()
     printed = capsys.readouterr().out
     assert all(str(output.with_suffix(s)) in printed for s in ("", ".html", ".json"))
 

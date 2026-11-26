@@ -259,9 +259,9 @@ def write(result: Analysis, output: Path) -> tuple[Path, Path, Path]:
     if output in {html, data}:
         raise ValueError("Укажите файл Markdown для параметра --output.")
     markdown = render_markdown(result)
-    output.write_text(markdown, encoding="utf-8")
-    html.write_text(render_html(markdown, result.quality), encoding="utf-8")
-    data.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    output.write_text(markdown, encoding="utf-8", newline="\n")
+    html.write_text(render_html(markdown, result.quality), encoding="utf-8", newline="\n")
+    data.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
     if result.trace:
-        output.with_suffix(".trace.jsonl").write_text(jsonl(result.trace), encoding="utf-8")
+        output.with_suffix(".trace.jsonl").write_text(jsonl(result.trace), encoding="utf-8", newline="\n")
     return output, html, data
