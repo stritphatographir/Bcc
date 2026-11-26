@@ -1,11 +1,11 @@
 # CHECKPOINT
 
-Updated: 2026-11-26 23:37 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-26 23:38 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Next queue item: 2.
+- Next queue item: 3.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
@@ -33,3 +33,4 @@ Updated: 2026-11-26 23:37 Almaty. Owner of this file: the conductor.
 
 ## Done
 - 1. CLI scaffold and validated OpenAI-compatible client with retry and cache.
+- 2. MD, TXT, PDF, DOCX and HTML loading with source locators and a PDF example.
