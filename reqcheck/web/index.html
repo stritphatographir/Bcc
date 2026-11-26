@@ -34,6 +34,7 @@
             <button type="button" data-format="md">Markdown</button>
             <button type="button" data-format="html">HTML</button>
             <button type="button" data-format="json">JSON</button>
+            <button type="button" data-format="jsonl">Журнал</button>
           </div>
         </div>
         <p id="placeholder">Результат появится после проверки документа.</p>
@@ -44,6 +45,7 @@
           <button type="button" data-view="test-cases" aria-pressed="false">Тесты</button>
           <button type="button" data-view="trace" aria-pressed="false">Трассировка</button>
           <button type="button" data-view="rewrites" aria-pressed="false">Правки</button>
+          <button type="button" data-view="agent-trace" aria-pressed="false">Журнал агентов</button>
         </nav>
         <iframe id="report" class="view" title="Отчёт о проверке требований" sandbox hidden></iframe>
         <div id="source" class="view source-view" hidden>
@@ -57,6 +59,7 @@
         <div id="test-cases" class="view content-view" hidden></div>
         <div id="trace" class="view content-view" hidden></div>
         <div id="rewrites" class="view content-view" hidden></div>
+        <div id="agent-trace" class="view content-view" hidden></div>
       </section>
     </div>
   </main>

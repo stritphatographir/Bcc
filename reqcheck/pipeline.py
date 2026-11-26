@@ -3,6 +3,7 @@ import subprocess
 from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
+from time import perf_counter
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, Field
@@ -20,6 +21,7 @@ from .qa import QA, build_qa
 from .quality import Quality, score_quality
 from .segmenter import Requirement, segment
 from .simulator import Simulation, simulate
+from .trace import TraceEvent, TraceLog
 from .verifier import verify
 
 
@@ -48,6 +50,7 @@ class Analysis(BaseModel):
     simulation: Simulation = Field(default_factory=Simulation)
     qa: QA = Field(default_factory=QA)
     quality: Quality = Field(default_factory=Quality)
+    trace: list[TraceEvent] = Field(default_factory=list)
 
 
 def _version() -> str:
@@ -64,36 +67,49 @@ def analyze(path: Path, settings: Settings, *,
             progress: Callable[[str], None] = lambda _: None,
             collect: Callable[[list[Question]], list[Answer]] = lambda _: []) -> Analysis:
     started = datetime.now(timezone.utc)
-    progress("Чтение документа")
+    trace = TraceLog()
+    active_stage = None
+    stage_start = None
+
+    def step(name, **counts):
+        nonlocal active_stage, stage_start
+        if active_stage:
+            trace.add("stage", active_stage, "ok", started=stage_start, outputs=counts)
+        active_stage, stage_start = name, perf_counter()
+        trace.add("stage", name, "start")
+        progress(name)
+
+    step("Чтение документа")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     sources = load(path)
-    progress("Выделение требований")
+    step("Выделение требований", blocks=len(sources))
     failed = []
     with Client(settings) as client:
+        client.trace = trace
         requirements, incomplete = segment(sources, client)
         if incomplete:
             failed.append("Сегментация")
-        progress("Проверка правил")
+        step("Проверка правил", requirements=len(requirements))
         rules = lint(sources, requirements) + review_fintech(sources, requirements) + review_api(sources, requirements)
-        progress("Проверка требований и связей")
+        step("Проверка требований и связей", findings=len(rules))
         issues, failed_reviews = review(sources, requirements, client, votes=settings.critic_votes)
         failed.extend(failed_reviews)
         simulation = Simulation()
-        progress("Моделирование сценариев")
+        step("Моделирование сценариев", findings=len(issues), failed=len(failed_reviews))
         try:
             simulation, scenario_issues = simulate(sources, requirements, client)
         except LLMError:
             failed.append("Моделирование сценариев")
         else:
             issues.extend(scenario_issues)
-        progress("Сверка цитат")
+        step("Сверка цитат", rules=len(simulation.rules), scenarios=len(simulation.scenarios))
         findings, dropped = verify(rules + issues, sources)
-        progress("Уточняющие вопросы")
+        step("Уточняющие вопросы", findings=len(findings), dropped=dropped)
         items = questions(findings)
         answers = collect(items)
         follow_up = []
         if answers:
-            progress("Повторная проверка после уточнений")
+            step("Повторная проверка после уточнений", questions=len(items), answers=len(answers))
             refs = {ref for answer in answers for ref in answer.question.finding_ids}
             affected = [f for i, f in enumerate(findings) if finding_id(i) in refs]
             ids = {ref for f in affected for ref in f.requirements}
@@ -121,6 +137,7 @@ def analyze(path: Path, settings: Settings, *,
     )
     qa = build_qa(requirements, findings, simulation, sources, follow_up)
     quality = score_quality(requirements, findings, failed)
+    step("Подготовка отчёта", findings=len(findings), questions=len(items), answers=len(answers))
     return Analysis(passport=passport, requirements=requirements, findings=findings,
                     questions=items, answers=answers, follow_up=follow_up, simulation=simulation, qa=qa,
-                    quality=quality)
+                    quality=quality, trace=trace.events)

@@ -69,6 +69,8 @@ mark { background: #ffe393; color: #312410; }
 #question-list { display: grid; gap: 1rem; }
 #question-list label { display: grid; gap: .4rem; }
 textarea { width: 100%; resize: vertical; min-height: 3.5rem; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); padding: .6rem; font: inherit; }
+.content-view details { border-bottom: 1px solid var(--line); padding: .55rem 0; }
+.content-view summary { cursor: pointer; }
 #recheck { justify-self: start; margin-block-start: .65rem; }
 @media (max-width: 690px) {
   .workspace { grid-template-columns: minmax(0, 1fr); }

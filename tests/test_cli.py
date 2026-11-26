@@ -104,6 +104,11 @@ def test_full_run_writes_three_files(tmp_path, monkeypatch, capsys):
         set(question["finding_ids"]) <= {f"D-{i + 1:03}" for i in range(len(findings))}
         for question in result["questions"]
     )
+    trace_path = output.with_suffix(".trace.jsonl")
+    trace = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    assert trace[0]["agent"] == "Чтение документа"
+    assert any(row["type"] == "llm" and row["status"] == "ok" for row in trace)
+    assert trace[-1]["agent"] == "Подготовка отчёта"
 
 
 def test_offline_falls_back_to_linter_only(tmp_path, monkeypatch):

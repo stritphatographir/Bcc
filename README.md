@@ -65,7 +65,9 @@ LLM_API_KEY=
 python -m reqcheck examples/requirements.md -o reports/report.md
 ```
 
-Отчёт пишется в три файла: `reports/report.md`, `reports/report.html`, `reports/report.json`.
+Отчёт пишется в `reports/report.md`, `reports/report.html`, `reports/report.json`.
+Журнал `reports/report.trace.jsonl` показывает этапы, хеши запросов, время, попадания кэша
+и токены, если провайдер их указал.
 В консоль (`stderr`) печатаются этапы работы агентов. Если модель недоступна, агент
 выдаёт отчёт только с правилами линтера и помечает это в паспорте как «Только правила».
 

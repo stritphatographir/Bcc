@@ -106,6 +106,17 @@ function fillArtifacts(event) {
       element("pre", rewrite.diff));
   }
   if (!event.analysis.qa.rewrites.length) rewrites.append(element("p", "Предлагаемых правок нет."));
+
+  const agentTrace = document.querySelector("#agent-trace");
+  agentTrace.replaceChildren();
+  for (const entry of event.analysis.trace) {
+    if (entry.status === "start") continue;
+    const details = element("details");
+    const duration = entry.duration_ms === null ? "" : " · " + entry.duration_ms + " мс";
+    details.append(element("summary", entry.agent + " · " + entry.status + duration),
+      element("pre", JSON.stringify({ время: entry.time, вход: entry.inputs, выход: entry.outputs }, null, 2)));
+    agentTrace.append(details);
+  }
 }
 
 function showEvent(event) {
@@ -201,11 +212,12 @@ questions.addEventListener("submit", event => {
 downloads.addEventListener("click", event => {
   const format = event.target.dataset.format;
   if (!format || !result) return;
-  const contents = { md: result.markdown, html: result.html, json: JSON.stringify(result.analysis, null, 2) };
+  const contents = { md: result.markdown, html: result.html, json: JSON.stringify(result.analysis, null, 2),
+    jsonl: result.analysis.trace.map(entry => JSON.stringify(entry)).join("\n") + "\n" };
   const url = URL.createObjectURL(new Blob([contents[format]]));
   const link = document.createElement("a");
   link.href = url;
-  link.download = "report." + format;
+  link.download = format === "jsonl" ? "report.trace.jsonl" : "report." + format;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });

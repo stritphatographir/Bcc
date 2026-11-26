@@ -10,6 +10,7 @@ from .clarifier import LABEL, PRIORITY, finding_id
 from .findings import Finding
 from .pipeline import Analysis
 from .quality import Quality
+from .trace import jsonl
 
 
 def literal(text: str) -> str:
@@ -261,4 +262,6 @@ def write(result: Analysis, output: Path) -> tuple[Path, Path, Path]:
     output.write_text(markdown, encoding="utf-8")
     html.write_text(render_html(markdown, result.quality), encoding="utf-8")
     data.write_text(result.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    if result.trace:
+        output.with_suffix(".trace.jsonl").write_text(jsonl(result.trace), encoding="utf-8")
     return output, html, data

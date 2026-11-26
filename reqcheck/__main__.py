@@ -20,7 +20,8 @@ def main():
 
     command = parser()
     args = command.parse_args()
-    destinations = {args.output, args.output.with_suffix(".html"), args.output.with_suffix(".json")}
+    destinations = {args.output, args.output.with_suffix(".html"), args.output.with_suffix(".json"),
+                    args.output.with_suffix(".trace.jsonl")}
     if args.input.resolve() in {path.resolve() for path in destinations}:
         command.error("Входной файл совпадает с одним из файлов отчёта.")
     try:

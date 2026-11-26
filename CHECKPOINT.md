@@ -1,11 +1,11 @@
 # CHECKPOINT
 
-Updated: 2026-11-27 00:16 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-27 00:18 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Next queue item: 17.10 (trace). Pending one- and three-vote scoring and report refresh for 17.1, 17.5, 17.6 and 17.7. Item 9 quality gate remains open at 17/30 recall (56.7%), 53/62 reviewed precision (85.5%), 62/84 reviewed. Rules-only recall 5/30. Continue tuning after each change that affects findings.
+- Next queue item: 17.11 (benchmark). Pending one- and three-vote scoring and report refresh for 17.1, 17.5, 17.6 and 17.7. Item 9 quality gate remains open at 17/30 recall (56.7%), 53/62 reviewed precision (85.5%), 62/84 reviewed. Rules-only recall 5/30. Continue tuning after each change that affects findings.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
@@ -60,3 +60,4 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 17.2, 17.3 and 17.4. Gherkin from resolved scenarios, coverage gaps, proposed requirement diffs with follow-up fixes, and a source-linked traceability table. Test and diff sections are visible through the UI report.
 - 17.8. Per-requirement score, observed ISO criteria and HTML readiness charts.
 - 17.9. Source quote highlights, answers and rechecks, separate QA tabs, responsive light/dark workspace.
+- 17.10. JSONL agent trace, request digests, response counts, timing, provider tokens and cache hits. Trace is also available in the web UI. Browser verification passed source highlights, Q&A and the three QA views (offline path).
