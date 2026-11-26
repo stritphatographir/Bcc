@@ -39,7 +39,21 @@ def run_cli(tmp_path, monkeypatch, transport):
 
 def mocked(request):
     system = json.loads(request.content)["messages"][0]["content"]
-    content = '{"requirements": []}' if "Выдели" in system else '{"findings": []}'
+    if "Выдели" in system:
+        content = '{"requirements": []}'
+    elif "согласованность и осуществимость" in system:
+        issue = {
+            "criterion": "Проверяемость",
+            "severity": "critical",
+            "evidence": [{"locator": "строка 5", "quote": "отправлять отчёт быстро"}],
+            "explanation": "Срок отправки не определён.",
+            "fix": "Указать предельный срок отправки.",
+            "question": "Какой срок следует проверять?",
+        }
+        invalid = dict(issue, evidence=[{"locator": "строка 999", "quote": "нет такой строки"}])
+        content = json.dumps({"findings": [issue, invalid]})
+    else:
+        content = '{"findings": []}'
     return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
 
 
@@ -58,6 +72,10 @@ def test_full_run_writes_three_files(tmp_path, monkeypatch, capsys):
     for section in SECTIONS:
         assert section in markdown
     assert "быстро" in markdown
+    assert "| ID в отчёте | ID в документе | Краткая формулировка |" in markdown
+    summary, questions = markdown.split("## Сводка", 1)[1].split("## Уточняющие вопросы", 1)
+    assert "Непроверяемые" in summary and "строка 5" in summary
+    assert "отправлять отчёт быстро" in questions
     assert r"- Модель — тест\-модель" in markdown
 
     html = output.with_suffix(".html").read_text(encoding="utf-8")
@@ -71,7 +89,7 @@ def test_full_run_writes_three_files(tmp_path, monkeypatch, capsys):
     assert passport["sha256"] == hashlib.sha256(document.read_bytes()).hexdigest()
     assert passport["model"] == "тест-модель" and passport["provider"] == "test"
     assert passport["mode"] == "Полная проверка" and passport["failed_agents"] == []
-    assert passport["calls"] > 0 and passport["dropped"] == 0
+    assert passport["calls"] > 0 and passport["dropped"] == 1
     assert passport["started"] < passport["finished"]
 
     body = " ".join(document.read_text(encoding="utf-8").split())

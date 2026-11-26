@@ -25,6 +25,17 @@ def finding_lines(identifier: str, finding: Finding) -> list[str]:
     ]
 
 
+def critical_category(finding: Finding) -> str:
+    criterion = finding.criterion.casefold()
+    if finding.code == "http-get-write" or re.search(r"согласован|противореч|consisten|conflict", criterion):
+        return "Противоречивые"
+    if re.search(r"полн|пропуск|complet", criterion):
+        return "Неполные"
+    if re.search(r"проверяем|однознач|измерим|verif|ambigu|testab", criterion):
+        return "Непроверяемые"
+    return "Другие критические дефекты"
+
+
 def render_markdown(result: Analysis) -> str:
     p = result.passport
     out = [
@@ -45,11 +56,14 @@ def render_markdown(result: Analysis) -> str:
         out.append("- Проверки без ответа — " + literal(", ".join(p.failed_agents)))
 
     out.extend(["", "## Выделенные требования", "",
-                "| ID в отчёте | ID в документе | Краткая формулировка и источник |",
+                "| ID в отчёте | ID в документе | Краткая формулировка |",
                 "| --- | --- | --- |"])
     for requirement in result.requirements:
+        formulation = literal(requirement.quote)
+        if not requirement.document_id:
+            formulation += " · " + literal(requirement.source.locator)
         out.append(f"| {requirement.id} | {literal(requirement.document_id or '—')} | "
-                   f"{literal(requirement.quote)} · {literal(requirement.source.locator)} |")
+                   f"{formulation} |")
     individual = defaultdict(list)
     set_findings = []
     for index, finding in enumerate(result.findings):
@@ -80,8 +94,29 @@ def render_markdown(result: Analysis) -> str:
     if not set_findings:
         out.extend(["В выполненных проверках набора подтверждённых дефектов нет.", ""])
 
+    counts = Counter(f.severity for f in result.findings)
+    ranked = sorted(enumerate(result.findings), key=lambda row: PRIORITY[row[1].severity])
+    out.extend(["## Сводка", "",
+                f"- Требований — {len(result.requirements)}",
+                f"- Нарушений — {len(result.findings)}",
+                *[f"- {label.capitalize()} уровень — {counts[key]}" for key, label in LABEL.items()],
+                "", "### Критические дефекты", ""])
+    critical = defaultdict(list)
+    for index, finding in ranked:
+        if finding.severity == "critical":
+            critical[critical_category(finding)].append((index, finding))
+    for category, entries in critical.items():
+        out.extend([f"#### {category}", ""])
+        for index, finding in entries:
+            out.append(f"- **{finding_id(index)}** · {literal(finding.explanation)}")
+            out.extend(f"  - {literal(e.locator)} · «{literal(e.quote)}»" for e in finding.evidence)
+        out.append("")
+    if not critical:
+        out.extend(["Подтверждённых критических дефектов в выполненных проверках нет.", ""])
+
     out.extend(["## Уточняющие вопросы", ""])
     grouped = defaultdict(list)
+    by_id = {finding_id(index): finding for index, finding in enumerate(result.findings)}
     for item in result.questions:
         grouped[item.stakeholder].append(item)
     for stakeholder, items in grouped.items():
@@ -89,6 +124,11 @@ def render_markdown(result: Analysis) -> str:
         for item in items:
             out.append(f"- **{item.id} · {LABEL[item.priority]}** · {literal(item.text)} "
                        f"({', '.join(item.finding_ids)})")
+            quotes = dict.fromkeys(
+                (e.locator, e.quote)
+                for ref in item.finding_ids if ref in by_id for e in by_id[ref].evidence
+            )
+            out.extend(f"  - {literal(locator)} · «{literal(quote)}»" for locator, quote in quotes)
         out.append("")
     if not grouped:
         out.extend(["Вопросов по подтверждённым дефектам нет.", ""])
@@ -101,19 +141,6 @@ def render_markdown(result: Analysis) -> str:
         out.append("")
         for index, finding in enumerate(result.follow_up, 1):
             out.extend(finding_lines(f"U-{index:03}", finding))
-
-    counts = Counter(f.severity for f in result.findings)
-    ranked = sorted(enumerate(result.findings), key=lambda row: PRIORITY[row[1].severity])
-    out.extend(["", "## Сводка", "",
-                f"- Требований — {len(result.requirements)}",
-                f"- Нарушений — {len(result.findings)}",
-                *[f"- {label.capitalize()} уровень — {counts[key]}" for key, label in LABEL.items()],
-                "", "### Критические дефекты", ""])
-    for index, finding in ranked:
-        if finding.severity == "critical":
-            out.append(f"- **{finding_id(index)}** · {literal(finding.explanation)}")
-    if not counts["critical"]:
-        out.append("Подтверждённых критических дефектов в выполненных проверках нет.")
 
     out.extend(["", "## Вердикт", ""])
     if counts["critical"] or counts["major"]:
