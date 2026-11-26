@@ -5,7 +5,7 @@ Updated: 2026-11-26 23:40 Almaty. Owner of this file: the conductor.
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Next queue item: 6.
+- Next queue item: 7.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
@@ -37,3 +37,4 @@ Updated: 2026-11-26 23:40 Almaty. Owner of this file: the conductor.
 - 3. Deterministic and model-assisted segmentation with stable IDs and source quotes.
 - 4. Russian ambiguity, template, checklist, approval, unit and HTTP rules.
 - 5. Concurrent requirement checks and five focused set checks with typed findings.
+- 6. Each citation must match its stated locator; normalize whitespace and count dropped findings.
