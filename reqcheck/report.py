@@ -52,11 +52,13 @@ def render_markdown(result: Analysis) -> str:
         f"- Провайдер — {literal(p.provider)}",
         f"- Версия агента — {literal(p.version)}",
         f"- SHA-256 документа — `{p.sha256}`",
-        f"- Запросы к модели — {p.calls}",
+        f"- Запросы к модели — {p.calls} (успешных ответов — {p.responses})",
         f"- Ответы из кэша — {p.cache_hits}",
         f"- Отклонённые выводы без подтверждённых цитат — {p.dropped}",
         f"- Режим — {p.mode}",
     ]
+    if p.llm_error:
+        out.append("- Модель недоступна — " + literal(p.llm_error))
     if p.failed_agents:
         out.append("- Проверки без ответа — " + literal(", ".join(p.failed_agents)))
 

@@ -31,33 +31,45 @@ pip install -r requirements.txt
 
 ## Ключ модели и выбор модели
 
-Скопируйте `.env.example` в `.env` и заполните. Файл `.env` не попадает в git.
+По умолчанию агент работает с **Gemini** (бесплатный тариф Google AI Studio).
 
-**Gemini.** Получите ключ на <https://aistudio.google.com/apikey>, затем в `.env`:
+1. Откройте <https://aistudio.google.com/apikey>, войдите в Google-аккаунт и нажмите
+   «Create API key».
+2. Скопируйте пример конфига и вставьте ключ:
+
+   ```bash
+   cp .env.example .env        # Windows: copy .env.example .env
+   ```
+
+   ```dotenv
+   GEMINI_API_KEY=<ваш ключ>
+   ```
+
+3. Больше ничего задавать не нужно. Модель по умолчанию — `gemini-3.8-flash`
+   (стабильная модель из [списка Gemini](https://ai.google.dev/gemini-api/docs/models),
+   ноябрь 2026). Другую модель задаёт `LLM_MODEL`, например `gemini-3.5-flash-lite`:
+   у неё выше лимиты бесплатного тарифа.
+
+Бесплатный тариф ограничивает число запросов в минуту. Агент держит не больше
+двух параллельных запросов (`REQCHECK_CONCURRENCY`) и при ответе 429 или 5xx ждёт
+по заголовку `Retry-After` или 2, 4, 8 … с (до `REQCHECK_MAX_RETRIES` повторов).
+Если ключ неверный или endpoint недоступен, агент прекращает обращения после первой
+ошибки, пишет отчёт только по правилам и указывает причину в паспорте.
+
+**Другой OpenAI-совместимый провайдер** (OpenAI, OpenRouter, Ollama, vLLM, LM Studio):
 
 ```dotenv
-GEMINI_API_KEY=<ваш ключ>
-LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-LLM_MODEL=<идентификатор актуальной модели Gemini из списка>
-```
-
-Выберите модель из [списка Gemini](https://ai.google.dev/gemini-api/docs/models) и укажите её ID.
-Оставьте `LLM_API_KEY` пустым, чтобы клиент использовал `GEMINI_API_KEY`.
-
-**Локальный endpoint (OpenAI-совместимый: Ollama, vLLM, LM Studio).** Ключ не нужен:
-
-```dotenv
-LLM_BASE_URL=http://monster-server:8080/v1
-LLM_MODEL=swift-1.5-iq3_s
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=qwen3:8b
 LLM_API_KEY=
 ```
 
-Для другого OpenAI-совместимого провайдера задайте его `LLM_BASE_URL`, `LLM_MODEL` и
-`LLM_API_KEY`. `REQCHECK_TIMEOUT` задаёт тайм-аут запроса в секундах.
-Для указанного локального Qwen по умолчанию используется компактный ответ, тайм-аут 150 секунд
-и три независимые проверки критиками. `REQCHECK_DISABLE_THINKING=0` возвращает режим рассуждения,
-а `REQCHECK_CRITIC_VOTES=1` запускает одного критика на задачу. Согласие в отчёте показывает
-долю голосов за вывод. После голосования цитаты снова проходят сверку.
+Конкурсный отчёт в `reports/` получен на локальной Qwen (`swift-1.5-iq3_s`,
+`LLM_BASE_URL=http://monster-server:8080/v1`): Gemini был недоступен из сети
+разработки. Для этой модели по умолчанию включены компактный ответ, тайм-аут 150 секунд
+и три голоса критиков. `REQCHECK_CRITIC_VOTES=1` запускает одного критика на задачу.
+Согласие в отчёте показывает долю голосов за вывод. После голосования цитаты снова
+проходят сверку.
 
 ## Запуск (одна команда)
 
@@ -175,7 +187,8 @@ GitHub Actions проверяет изменённые спецификации 
 report: run passport, segmentation table, per-requirement and set-level checks,
 prioritized clarifying questions, summary and verdict. Every finding carries a verbatim
 quote and a locator; an Evidence Verifier drops findings whose quote is not in the source.
-Set `GEMINI_API_KEY` + `LLM_MODEL` (no retired default — set a current Gemini model) or
+Put `GEMINI_API_KEY` from https://aistudio.google.com/apikey into `.env` (default model
+`gemini-3.8-flash`, override with `LLM_MODEL`; 429/5xx are retried with backoff) or
 point `LLM_BASE_URL`/`LLM_API_KEY` at any OpenAI-compatible endpoint, including a local
 model. Run: `python -m reqcheck examples/requirements.md -o reports/report.md`
 (MD + HTML + JSON). `--interactive` asks clarifying questions and re-checks. `pytest`

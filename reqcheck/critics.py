@@ -157,7 +157,7 @@ def review(sources: list[Source], requirements: list[Requirement], client: Clien
             return ballots[0]
         return vote(ballots)
 
-    with ThreadPoolExecutor(max_workers=3) as pool:
+    with ThreadPoolExecutor(max_workers=getattr(getattr(client, "settings", None), "concurrency", 3)) as pool:
         results = list(pool.map(run, jobs))
     return (
         [finding for result in results if result for finding in result],

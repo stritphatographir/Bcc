@@ -3,7 +3,7 @@ import json
 import httpx
 from pydantic import BaseModel
 
-from reqcheck.llm import Client
+from reqcheck.llm import Client, LLMError
 from reqcheck.config import Settings
 
 
@@ -45,3 +45,48 @@ def test_thinking_override_is_opt_in_and_part_of_cache_key(tmp_path, monkeypatch
         client.ask("task", {}, Result)
     assert payloads[0]["chat_template_kwargs"] == {"enable_thinking": False}
     assert "chat_template_kwargs" not in payloads[1]
+
+
+def test_rate_limit_backs_off_using_retry_after(tmp_path):
+    replies = iter([
+        httpx.Response(429, headers={"retry-after": "7"}),
+        httpx.Response(503),
+        httpx.Response(200, json={"choices": [{"message": {"content": '{"answer": 1}'}}]}),
+    ])
+    settings = Settings("http://test/v1", "dummy", "test", tmp_path)
+    with Client(settings, transport=httpx.MockTransport(lambda request: next(replies))) as client:
+        waits = []
+        client.sleep = waits.append
+        assert client.ask("task", {}, Result).answer == 1
+    assert waits == [7.0, 4.0]
+    assert (client.calls, client.responses) == (3, 1)
+
+
+def test_fatal_error_stops_further_calls(tmp_path):
+    seen = []
+
+    def respond(request):
+        seen.append(request)
+        return httpx.Response(400, json={"error": {"message": "API key not valid. Please pass a valid API key."}})
+
+    settings = Settings("http://test/v1", "dummy", "test", tmp_path)
+    with Client(settings, transport=httpx.MockTransport(respond)) as client:
+        for task in ("one", "two", "three"):
+            try:
+                client.ask(task, {}, Result)
+            except LLMError as exc:
+                assert "HTTP 400" in str(exc)
+    assert len(seen) == 1
+    assert "неверный ключ" in client.offline
+
+
+def test_gemini_is_the_default_provider(monkeypatch):
+    for name in ("LLM_BASE_URL", "LLM_MODEL", "LLM_API_KEY", "REQCHECK_CRITIC_VOTES", "REQCHECK_CONCURRENCY"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.chdir("/")
+    settings = Settings.from_env()
+    assert settings.base_url.startswith("https://generativelanguage.googleapis.com/")
+    assert settings.model.startswith("gemini-")
+    assert settings.api_key == "test-key"
+    assert (settings.critic_votes, settings.concurrency) == (1, 2)

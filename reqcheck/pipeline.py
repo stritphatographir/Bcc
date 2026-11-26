@@ -35,6 +35,8 @@ class Passport(BaseModel):
     finished: datetime
     calls: int
     cache_hits: int
+    responses: int = 0
+    llm_error: str = ""
     dropped: int
     failed_agents: list[str]
     mode: str
@@ -134,7 +136,8 @@ def analyze(path: Path, settings: Settings, *,
         document=path.name, sha256=digest, model=settings.model,
         provider=urlsplit(settings.base_url).hostname or "", version=version,
         started=started, finished=datetime.now(timezone.utc), calls=client.calls,
-        cache_hits=client.hits, dropped=dropped, failed_agents=failed, mode=mode,
+        cache_hits=client.hits, responses=client.responses - client.hits,
+        llm_error=client.offline or "", dropped=dropped, failed_agents=failed, mode=mode,
     )
     qa = build_qa(requirements, findings, simulation, sources, follow_up)
     quality = score_quality(requirements, findings, failed)

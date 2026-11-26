@@ -1,12 +1,13 @@
 # CHECKPOINT
 
-Updated: 2026-11-27 00:36 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-27 01:00 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
 - Queue 9–17 complete. Final report scored 23/30 recall (76.7%) and 67/76 reviewed precision (88.2%), with 76/100 findings adjudicated.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
+- Session 2026-11-27 (Claude): jury-readiness pass, items 18–19 below.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
 ## Queue (in order)
@@ -29,6 +30,8 @@ Updated: 2026-11-27 00:36 Almaty. Owner of this file: the conductor.
 16. Set up .venv (pytest currently fails: bs4 missing outside a venv); finish uncommitted eval/score.py.
 17. Outstanding features from AGENTS.md, in this order: 1 simulator, 5 voting, 6 fintech pack, 7 API critic, 2 test cases, 3 corrected spec, 4 traceability, 8 scores, 9 web UI, 10 trace, 11 benchmark, 12 integrations, 13 diff.
    Re-run items 9 and 14 after each feature that changes findings.
+18. Jury run path: Gemini default provider and model, 429/5xx backoff, fail-fast offline mode, honest passport counts.
+19. Explicit §6 verdict (development / testing yes-no-conditional) and de-duplicated first fixes.
 
 ## Conductor task id
 
@@ -66,3 +69,5 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 9 and 17.11. Final sample exceeds the 75% recall target. The benchmark lists the seven missed groups and reports ablation counts bound to the committed report hash.
 - Final report uses 20 cached Qwen responses and includes 66 requirements, 100 findings, eight generated QA cases and two simulator counterexamples. Separate cold run ran in 249.52 seconds with 19 live calls and no failed checks.
 - Final verification: 41 offline tests in a clean venv, PDF fallback, full-model SSE API, browser Q&A and highlights, export/diff smoke checks, workflow YAML and Bash syntax, and secret-prefix history scan. Gemini runtime, hosted GitHub Actions and visual DOCX rendering remain unverified.
+- 18. Gemini is now the default (`gemini-3.8-flash`, verified on ai.google.dev models page 2026-11-27); `.env.example` needs only GEMINI_API_KEY. 429/5xx retried up to REQCHECK_MAX_RETRIES with Retry-After or 2/4/8 s backoff; REQCHECK_CONCURRENCY (2 on Gemini). ConnectError, 401/403/404 or invalid key stop all further calls (1 request instead of 47 on the offline PDF run). Passport shows successful responses and the reason the model was unavailable. Old report JSON still loads.
+- 19. Verdict states «Начинать разработку / тестирование» with critical and major requirement IDs; first fixes skip repeated quotes (five distinct defects on the sample). 43 offline tests pass (web tests need fastapi, not installable in that sandbox). Committed reports/ left as generated at 6f4e3d1; regenerate with Gemini for submission.
