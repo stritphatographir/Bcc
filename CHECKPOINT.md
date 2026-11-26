@@ -1,6 +1,6 @@
 # CHECKPOINT
 
-Updated: 2026-11-26 23:47 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-26 23:55 Almaty. Owner of this file: the conductor.
 
 ## State
 
@@ -48,3 +48,4 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 7. Prioritized linked questions and pipeline support for terminal answers and targeted rechecks.
 - 8. CLI writes Markdown, HTML and JSON with the full report sections and provenance.
 - 16. Repaired .venv with Windows Python 3.13 wheels. Dependency install and offline tests pass. Finished the inherited scorer implementation in item 9.
+- 10. Offline tests now exercise the CLI end to end, including all three outputs and linter-only fallback.
