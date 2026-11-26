@@ -1,11 +1,11 @@
 # CHECKPOINT
 
-Updated: 2026-11-26 23:42 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-26 23:47 Almaty. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Next queue item: 9.
+- Next queue item: 9. Scorer and tests ready. Live local-Qwen baseline and adjudication pending.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
 
@@ -32,7 +32,7 @@ Updated: 2026-11-26 23:42 Almaty. Owner of this file: the conductor.
 
 ## Conductor task id
 
-(set by the conductor thread)
+mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 
 ## Quota / reset log
 
@@ -47,3 +47,4 @@ Updated: 2026-11-26 23:42 Almaty. Owner of this file: the conductor.
 - 6. Each citation must match its stated locator; normalize whitespace and count dropped findings.
 - 7. Prioritized linked questions and pipeline support for terminal answers and targeted rechecks.
 - 8. CLI writes Markdown, HTML and JSON with the full report sections and provenance.
+- 16. Repaired .venv with Windows Python 3.13 wheels. Dependency install and offline tests pass. Finished the inherited scorer implementation in item 9.
