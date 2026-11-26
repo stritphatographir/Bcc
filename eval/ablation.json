@@ -1,0 +1,48 @@
+{
+  "report_sha256": "65999112babbd3e13d13419cad1ee409f4095a3fe7df274f77ab229e7443cd6b",
+  "total_defects": 30,
+  "profiles": [
+    {
+      "name": "Только линтер",
+      "matched_defects": 5,
+      "true_positives": 21,
+      "false_positives": 0,
+      "total_findings": 21
+    },
+    {
+      "name": "+ критики, один голос",
+      "matched_defects": 17,
+      "true_positives": 53,
+      "false_positives": 9,
+      "total_findings": 84
+    },
+    {
+      "name": "+ первоначальный симулятор",
+      "matched_defects": 17,
+      "true_positives": 53,
+      "false_positives": 9,
+      "total_findings": 84
+    },
+    {
+      "name": "+ голосование, три голоса",
+      "matched_defects": 12,
+      "true_positives": 32,
+      "false_positives": 1,
+      "total_findings": 44
+    },
+    {
+      "name": "Полный анализ до сверки цитат, один голос",
+      "matched_defects": 23,
+      "true_positives": 67,
+      "false_positives": 13,
+      "total_findings": 104
+    },
+    {
+      "name": "Полный анализ после сверки цитат, один голос",
+      "matched_defects": 23,
+      "true_positives": 67,
+      "false_positives": 9,
+      "total_findings": 100
+    }
+  ]
+}
