@@ -24,6 +24,10 @@ Read this file and `CHECKPOINT.md` before any work. Update `CHECKPOINT.md` after
   **Every finding cites an exact place and an exact quote from the document. No generic phrases.**
 - Criteria: ISO/IEC/IEEE 29148:2018 §5.2.5 (individual: necessary, appropriate, unambiguous, complete, singular, feasible, verifiable, correct, conforming) and §5.2.6 (set: complete, consistent, feasible, comprehensible, able to be validated), plus IEEE 830-1998 §4.3 (correct, unambiguous, complete, consistent, ranked, verifiable, modifiable, traceable). Also flag design leakage (solution in a requirement).
 
+## Winning playbook
+
+Read `.claude/skills/hackathon-playbook/SKILL.md` before work on the report format, Clarifier, README, UI, demo or slides. Background: `research/`.
+
 ## Network facts on this machine
 
 - Machine egress IP is in a Tor/VPN range. Google Gemini API returns HTTP 403 from here. Do not burn time on it.
