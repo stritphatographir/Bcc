@@ -98,7 +98,7 @@ def analyze(path: Path, settings: Settings, *,
         simulation = Simulation()
         step("Моделирование сценариев", findings=len(issues), failed=len(failed_reviews))
         try:
-            simulation, scenario_issues = simulate(sources, requirements, client)
+            simulation, scenario_issues = simulate(sources, requirements, client, issues)
         except LLMError:
             failed.append("Моделирование сценариев")
         else:

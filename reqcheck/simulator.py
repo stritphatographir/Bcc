@@ -1,5 +1,6 @@
 import json
 import re
+from collections.abc import Sequence
 from itertools import combinations
 from operator import eq, ge, gt, le, lt, ne
 from typing import Literal
@@ -7,7 +8,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from .findings import Evidence, Finding
-from .llm import Client
+from .llm import Client, LLMError
 from .loader import Source
 from .segmenter import Requirement
 from .verifier import match_evidence
@@ -248,7 +249,8 @@ def behavior_sources(sources: list[Source]) -> list[Source]:
     return [source for source in sources if any(BEHAVIOR_SECTION.search(s) for s in source.section)]
 
 
-def simulate(sources: list[Source], requirements: list[Requirement], client: Client):
+def simulate(sources: list[Source], requirements: list[Requirement], client: Client,
+             hypotheses: Sequence[Finding] = ()):
     candidates = behavior_sources(sources)
     if not candidates:
         candidates = [requirement.source for requirement in requirements] or sources
@@ -274,4 +276,31 @@ def simulate(sources: list[Source], requirements: list[Requirement], client: Cli
         "Для каждой записи evidence содержит исходный locator и дословный непрерывный quote из этой строки.",
         [source.model_dump() for source in candidates], DecisionTable,
     )
+    locations = {source.locator: source.text for source in candidates}
+    pairs = {}
+    for finding in hypotheses:
+        refs = tuple(sorted({e.locator for e in finding.evidence}))
+        if len(refs) != 2 or not all(match_evidence(e, locations) for e in finding.evidence):
+            continue
+        if not re.search(r"противореч|конфликт|несовместим", finding.explanation, re.I):
+            continue
+        pairs.setdefault(refs, finding)
+    if pairs:
+        try:
+            proposals = client.ask(
+                "Построй таблицу решений для проверки возможных конфликтов. Каждый пункт — гипотеза, "
+                "которую нужно проверить по двум цитатам. Для конфликта верни два правила с одинаковым scope, "
+                "одним наблюдаемым полем результата в outcome и разными буквальными значениями одного типа. "
+                "В conditions перечисли все предпосылки, включая порядок событий. Используй одинаковые имена "
+                "фактов для двух правил. Не сравнивай имя поля со значением. Если одна цитата — критерий "
+                "приёмки, она может задавать case с facts и expected по тем же ключам. Сохрани точное "
+                "evidence каждой записи. Не добавляй порядок событий или результат, которого нет в цитатах. "
+                "Пропусти гипотезу, если обе стороны нельзя выразить в общей системе фактов.",
+                [{"hypothesis": finding.explanation, "evidence": [e.model_dump() for e in finding.evidence]}
+                 for finding in list(pairs.values())[:4]], DecisionTable,
+            )
+        except LLMError:
+            pass
+        else:
+            table = DecisionTable(rules=table.rules + proposals.rules, cases=table.cases + proposals.cases)
     return evaluate(table, sources, requirements)
