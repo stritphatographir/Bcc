@@ -167,6 +167,31 @@ def render_markdown(result: Analysis) -> str:
         out.extend(["", "Первоочередные правки", ""])
         for index, finding in ranked[:3]:
             out.append(f"- **{finding_id(index)}** · {literal(finding.fix)}")
+
+    if result.qa.trace:
+        out.extend(["", "## Сценарии тестирования", ""])
+        kinds = {"positive": "Позитивный", "negative": "Негативный", "boundary": "Граничный"}
+        for case in result.qa.tests:
+            out.extend([f"### {case.id} · {kinds[case.kind]}", "",
+                        "Требования — " + ", ".join(case.requirements), "",
+                        *["    " + line for line in case.gherkin.splitlines()], ""])
+        if result.qa.uncovered:
+            out.extend(["Нет проверяемого результата в таблице решений для требований:", "",
+                        ", ".join(result.qa.uncovered), ""])
+        out.extend(["## Матрица трассировки", "",
+                    "| Цель | Требование | Приёмка | API или данные | Тесты |",
+                    "| --- | --- | --- | --- | --- |"])
+        for row in result.qa.trace:
+            cells = [row.goal or "—", row.requirement, ", ".join(row.acceptance) or "—",
+                     ", ".join(row.contracts) or "—", ", ".join(row.tests) or "—"]
+            out.append("| " + " | ".join(literal(value) for value in cells) + " |")
+        if result.qa.rewrites:
+            out.extend(["", "## Предлагаемые правки", "",
+                        "Проект для согласования с владельцем требований.", ""])
+            for patch in result.qa.rewrites:
+                out.extend([f"### {patch.requirement}", "",
+                            f"{literal(patch.locator)} · {', '.join(patch.findings)}", "",
+                            *["    " + line for line in patch.diff.splitlines()], ""])
     return "\n".join(out).rstrip() + "\n"
 
 

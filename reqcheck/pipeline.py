@@ -16,6 +16,7 @@ from .fintech import review_fintech
 from .linter import lint
 from .llm import Client, LLMError
 from .loader import load
+from .qa import QA, build_qa
 from .segmenter import Requirement, segment
 from .simulator import Simulation, simulate
 from .verifier import verify
@@ -44,6 +45,7 @@ class Analysis(BaseModel):
     answers: list[Answer] = Field(default_factory=list)
     follow_up: list[Finding] = Field(default_factory=list)
     simulation: Simulation = Field(default_factory=Simulation)
+    qa: QA = Field(default_factory=QA)
 
 
 def _version() -> str:
@@ -115,5 +117,6 @@ def analyze(path: Path, settings: Settings, *,
         started=started, finished=datetime.now(timezone.utc), calls=client.calls,
         cache_hits=client.hits, dropped=dropped, failed_agents=failed, mode=mode,
     )
+    qa = build_qa(requirements, findings, simulation, sources, follow_up)
     return Analysis(passport=passport, requirements=requirements, findings=findings,
-                    questions=items, answers=answers, follow_up=follow_up, simulation=simulation)
+                    questions=items, answers=answers, follow_up=follow_up, simulation=simulation, qa=qa)

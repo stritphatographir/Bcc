@@ -87,6 +87,7 @@ class Scenario(BaseModel):
     label: str
     facts: dict[str, Scalar]
     expected: dict[str, Scalar] = Field(default_factory=dict)
+    outcomes: dict[str, Scalar] = Field(default_factory=dict)
     evidence: Evidence | None = None
     status: Literal["covered", "conflict", "uncovered"]
     applicable_rules: list[int]
@@ -194,6 +195,8 @@ def evaluate(table: DecisionTable, sources: list[Source], requirements: list[Req
         result.scenarios.append(Scenario(
             scope=scope, label=label, facts=facts, expected=expected, evidence=evidence,
             status=status, applicable_rules=[i for i, _ in applied],
+            outcomes={field: values[0][0] for field, values in outputs.items()
+                      if field in comparable_outputs and all(_same(values[0][0], value) for value, _ in values)},
         ))
         seen_cases.add((scope, json.dumps(facts, sort_keys=True)))
 
