@@ -50,3 +50,4 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 16. Repaired .venv with Windows Python 3.13 wheels. Dependency install and offline tests pass. Finished the inherited scorer implementation in item 9.
 - 10. Offline tests now exercise the CLI end to end, including all three outputs and linter-only fallback.
 - 11. Russian quick start and short English guide, provider/key setup, CLI, and Mermaid architecture.
+- 12. Added a merchant-settlement sample with cutoff, FX, and duplicate payment cases. Live generality run in progress.
