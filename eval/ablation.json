@@ -1,5 +1,5 @@
 {
-  "report_sha256": "65999112babbd3e13d13419cad1ee409f4095a3fe7df274f77ab229e7443cd6b",
+  "report_sha256": "2b3edd34719e7b9f37a642ea292373eb3e4eea5cd0cdc7b8847ed277e33a2baf",
   "total_defects": 30,
   "profiles": [
     {
@@ -32,17 +32,17 @@
     },
     {
       "name": "Полный анализ до сверки цитат, один голос",
-      "matched_defects": 23,
-      "true_positives": 67,
+      "matched_defects": 25,
+      "true_positives": 69,
       "false_positives": 13,
-      "total_findings": 104
+      "total_findings": 106
     },
     {
       "name": "Полный анализ после сверки цитат, один голос",
-      "matched_defects": 23,
-      "true_positives": 67,
+      "matched_defects": 25,
+      "true_positives": 69,
       "false_positives": 9,
-      "total_findings": 100
+      "total_findings": 102
     }
   ]
 }
