@@ -4,6 +4,7 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Handoff
 
+- Latest demo preflight: the tracked video and report are present; the scorer confirms 25/30 recall and 78/101 precision for the adjudicated report. The current shell has no `python` on PATH; bundled Python runs the scorer but does not include pytest. Earlier clean-venv test results are recorded below.
 - Main repository: stritphatographir/Bcc. GitHub has one branch, no PRs, issues or commit comments at the preflight check.
 - Deliverables: `examples/requirements.md`, `reports/report.md` (also HTML, JSON and trace), `docs/demo.mp4`. The original file matches the organizer's SHA-256: e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381.
 - The Russian video runs 2:46.52 with narration and selectable subtitles. It demonstrates D-101 ? Q-06, the answer, recheck, trace, tests, verdict and benchmark. See `docs/demo.md` for cue points and defense notes.
