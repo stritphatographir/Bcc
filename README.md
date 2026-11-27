@@ -205,6 +205,22 @@ Markdown занял 77,34 с при первом вызове Gemini и ещё 4
 
 CLI и `eval.score` всегда печатают в UTF-8, чтобы консоль Windows не падала на кириллице.
 
+### Второй документ: проверка на переобучение
+
+Для `examples/merchant-settlement.md` список дефектов `eval/golden_settlement.md` (21 дефект)
+составлен до запуска агента. Модель — локальная Qwen (Gemini в этой сети отвечал HTTP 403).
+
+| Прогон | Recall | Precision |
+| --- | --- | --- |
+| [Слепой, до доработки](eval/runs/settlement-blind/report.md) | 6/21 (28,6%) | 20/23 (87,0%) |
+| [После общих финтех-проверок](eval/runs/settlement-tuned/report.md) | 17/21 (81,0%) | 35/36 (97,2%) |
+
+Второй прогон уже не слепой: проверки добавлены после разбора пропусков. Они общие
+(граница времени отсечки, целевая валюта и отсутствие курса, единицы денежных полей,
+перенос возвратов, отказ и потеря ответа внешней стороны, ключ повтора). В коде нет
+фактов из этого документа; на `examples/requirements.md` новые проверки не дали ни одного
+вывода. Оценки выводов: `eval/runs/settlement-*/adjudication.json`.
+
 ## Экспорт и сравнение версий
 
 ```bash
@@ -238,3 +254,5 @@ model. Run: `python -m reqcheck examples/requirements.md -o reports/report.md`
 runs offline with a mocked LLM.
 
 The submitted report was assembled from cached Gemini answers; a cold run with live calls is in `eval/runs/qwen-cold.json`. The demo video uses local Qwen (recall 25/30); the report uses Gemini `gemini-3.5-flash-lite` (recall 27/30). CLI output is always UTF-8.
+
+Second spec (`examples/merchant-settlement.md`, golden list written before the run, local Qwen): blind recall 6/21, precision 20/23; after adding generic fintech checks recall 17/21, precision 35/36. The second score is no longer blind.

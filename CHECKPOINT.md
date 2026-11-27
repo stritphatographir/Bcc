@@ -7,7 +7,8 @@ Updated 2026-11-27 before submission. Owner: conductor.
 - Done: 4c8ab96 UTF-8 console output for reqcheck and eval.score, passport shows duration and labels cached answers, defense answer in docs/demo.md. 70 tests pass.
 - Done: 36febc5 re-rendered reports/report.md and .html from the unchanged report.json; scorer still 27/30, 59/71.
 - Blocked: Gemini returns HTTP 403 again on this network; the cached Gemini answers for the submission report are no longer on disk, so a cold Gemini run is not possible now. Live-call evidence: eval/runs/qwen-cold.json.
-- Running: blind golden set eval/golden_settlement.md (21 defects, written before the agent ran), Qwen run and adjudication in eval/runs/settlement/. Then README notes and astra review.
+- Done: 7b0924a README notes (cached passport, video = Qwen, report = Gemini, UTF-8). 29b465b blind golden set eval/golden_settlement.md (21 defects) and untuned Qwen run eval/runs/settlement-blind/: recall 6/21 (28.6%), precision 20/23 (87.0%). Pushed.
+- Done: generic fintech checks in reqcheck/fintech.py (cutoff boundary, currency/FX, money units, refund carry-forward, external rejection and retry key), review round 1 fixed 5 issues, 98 tests pass, 0 new findings on the main spec. Tuned Qwen run eval/runs/settlement-tuned/: recall 17/21 (81.0%), precision 35/36 (97.2%), adjudicated by gpt-6.2-astra. README and docs/demo.md say the tuned score is not blind. Submission report unchanged (27/30, 59/71).
 - Skipped on purpose: segmenter treating diagram arrows as requirements (would renumber R/D ids used in the video and adjudication).
 - Amir: give jury repo access, submit before 23:59 Almaty.
 
