@@ -4,6 +4,9 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Handoff
 
+- Current submission report: Gemini `gemini-3.5-flash-lite`, agent version `5d002ca`, full analysis, zero failed checks, 73 requirements, 67 findings, 53 questions, 25 simulated scenarios. All citations matched exactly. Final results: 23/30 recall (76.7%), 55/67 precision (82.1%), misses G01, G02, G06, G13, G16, G19, G25. Final Markdown assembly took 1.34 s using 20 cached Gemini responses. The Qwen video below is a separate run.
+- Final benchmark used the same segmentation throughout. Rules 15/30 and 33/33; + critics 23/30 and 55/67; + simulator 23/30 and 55/67; + three votes 17/30 and 38/40; + citation verification 17/30 and 38/40. The three-vote run took 154.71 s with 36 live responses and 20 cache hits. Kept one vote for the submission report.
+- Edge browser QA with Gemini passed upload, all eight stage events, two highlights for D-022, linked Q-01 with related lines, all tabs, and full recheck. The response persisted, the JSON download contained the answer, and Gemini returned six live answers with four follow-up findings and no failed stage. See `docs/demo.md` for the live example.
 - Latest demo preflight: the tracked video and report are present; the scorer confirms 25/30 recall and 78/101 precision for the adjudicated report. The current shell has no `python` on PATH; bundled Python runs the scorer but does not include pytest. Earlier clean-venv test results are recorded below.
 - Main repository: stritphatographir/Bcc. GitHub has one branch, no PRs, issues or commit comments at the preflight check.
 - Deliverables: `examples/requirements.md`, `reports/report.md` (also HTML, JSON and trace), `docs/demo.mp4`. The original file matches the organizer's SHA-256: e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381.

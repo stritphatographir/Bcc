@@ -1,48 +1,50 @@
 {
-  "report_sha256": "2b3edd34719e7b9f37a642ea292373eb3e4eea5cd0cdc7b8847ed277e33a2baf",
+  "report_sha256": "c9a785fafcb1868e340250e4b78c2bca1a7a2c8e6cdc627d3e730b0c5abf83e0",
+  "model": "gemini-3.5-flash-lite",
+  "measured_on": "2026-11-27",
   "total_defects": 30,
   "profiles": [
     {
-      "name": "Только линтер",
-      "matched_defects": 5,
-      "true_positives": 21,
+      "name": "Детерминированные правила",
+      "matched_defects": 15,
+      "true_positives": 33,
       "false_positives": 0,
-      "total_findings": 21
+      "total_findings": 33
     },
     {
       "name": "+ критики, один голос",
-      "matched_defects": 17,
-      "true_positives": 53,
-      "false_positives": 9,
-      "total_findings": 84
+      "matched_defects": 23,
+      "true_positives": 55,
+      "false_positives": 12,
+      "total_findings": 67
     },
     {
-      "name": "+ первоначальный симулятор",
-      "matched_defects": 17,
-      "true_positives": 53,
-      "false_positives": 9,
-      "total_findings": 84
+      "name": "+ симулятор",
+      "matched_defects": 23,
+      "true_positives": 55,
+      "false_positives": 12,
+      "total_findings": 67
     },
     {
       "name": "+ голосование, три голоса",
-      "matched_defects": 12,
-      "true_positives": 32,
-      "false_positives": 1,
-      "total_findings": 44
+      "matched_defects": 17,
+      "true_positives": 38,
+      "false_positives": 2,
+      "total_findings": 40
     },
     {
-      "name": "Полный анализ до сверки цитат, один голос",
-      "matched_defects": 25,
-      "true_positives": 78,
-      "false_positives": 27,
-      "total_findings": 106
+      "name": "+ сверка цитат, три голоса",
+      "matched_defects": 17,
+      "true_positives": 38,
+      "false_positives": 2,
+      "total_findings": 40
     },
     {
-      "name": "Полный анализ после сверки цитат, один голос",
-      "matched_defects": 25,
-      "true_positives": 78,
-      "false_positives": 23,
-      "total_findings": 102
+      "name": "Финальный отчёт: один голос со сверкой цитат",
+      "matched_defects": 23,
+      "true_positives": 55,
+      "false_positives": 12,
+      "total_findings": 67
     }
   ]
 }
