@@ -3,3 +3,7 @@
 /reports/*.html text eol=lf
 /reports/*.json text eol=lf
 /reports/*.jsonl text eol=lf
+/eval/runs/**/*.md text eol=lf
+/eval/runs/**/*.html text eol=lf
+/eval/runs/**/*.json text eol=lf
+/eval/runs/**/*.jsonl text eol=lf
