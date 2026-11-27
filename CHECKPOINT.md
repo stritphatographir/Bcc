@@ -8,7 +8,7 @@ Updated: 2026-11-27, jury preparation. Owner of this file: the conductor.
 - Queue through item 21 complete. Jury audit reviewed all 102 findings. Recall 25/30 (83.3%); precision 78/101 (77.2%); one undecided pending the authentication contract.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Session 2026-11-27 (Claude): jury-readiness pass, items 18–21 below.
-- Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.
+- Submission uses the scored local Qwen report and the recorded Russian demo. Amir controls jury access and submission.
 
 ## Queue (in order)
 
@@ -77,3 +77,4 @@ mcp:launch:23ccc2a2f4eebf41ce8194d125404263022dbbd57a1cac66f99a2ca04ac12b30
 - 21. `reqcheck/structure.py`: both rules hit G27 and G30 on MD and PDF with verified quotes; 0 findings on merchant-settlement (generality check). Expected recall after the next full run: 25/30 if LLM findings hold; must be re-adjudicated (eval binds to report hash). 50 offline tests. Remaining LLM-only misses: G14, G15, G20, G21, G23 — prompt work needs a live model to evaluate, not attempted blind.
 - Night-run verification: regenerated the report at 1b1ec93 with 20 cached Qwen responses. Verified every citation on both specs. Matched G27 and G30 in the refreshed report. Main sample: 102 findings and 67 questions. Independent sample: 43 findings and 18 questions. 53 offline tests pass.
 - Jury workbench: selected finding links directly to its question. The submit button stays visible and the server-confirmed answer count is shown after recheck. Tested D-101 → Q-06 in Edge with six live local responses, four follow-up findings and no failed stage. PDF CLI run: 66 requirements, 100 findings, 19 live requests, 252 seconds; every citation verified.
+- Jury recording: docs/demo.mp4 (2:46.52), Russian narration and selectable Russian subtitles. Covers both source rules, a real answer/recheck, agent trace, QA, verdict and benchmark. README and docs/demo.md link the deliverables.
