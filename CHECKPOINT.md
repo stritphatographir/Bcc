@@ -1,11 +1,11 @@
 # CHECKPOINT
 
-Updated: 2026-11-27 03:11 Almaty. Owner of this file: the conductor.
+Updated: 2026-11-27, jury preparation. Owner of this file: the conductor.
 
 ## State
 
 - Repo bootstrapped: AGENTS.md (spec + checklist + swarm rules), eval/golden_defects.md, examples/requirements.md, .gitignore.
-- Queue through item 21 complete. Refreshed report scored 25/30 recall (83.3%) and 69/78 reviewed precision (88.5%), with 78/102 findings adjudicated.
+- Queue through item 21 complete. Jury audit reviewed all 102 findings. Recall 25/30 (83.3%); precision 78/101 (77.2%); one undecided pending the authentication contract.
 - Gemini API blocked from this machine (Tor/VPN egress, HTTP 403). Dev LLM: local Qwen at http://monster-server:8080/v1.
 - Session 2026-11-27 (Claude): jury-readiness pass, items 18–21 below.
 - Waiting on the user: final-run LLM (Gemini via non-VPN network, or another key), making the repo public at submission, demo recording.

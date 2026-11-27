@@ -70,6 +70,22 @@ def test_duplicate_reference_counts_once(tmp_path):
     assert result.true_positives == 1
 
 
+def test_review_outside_golden_affects_precision_only(tmp_path):
+    result = score(*write_case(tmp_path, {
+        "hits": {"G01": ["D-01"]}, "valid_extra": ["D-04"],
+        "false_positives": ["D-03"], "undecided": ["D-02"],
+    }))
+    assert (result.matched_defects, result.true_positives, result.false_positives) == (1, 2, 1)
+    assert result.undecided == 1
+
+
+@pytest.mark.parametrize("key", ["hits", "false_positives", "undecided"])
+def test_extra_cannot_have_two_labels(tmp_path, key):
+    other = {"G01": ["D-04"]} if key == "hits" else ["D-04"]
+    with pytest.raises(ValueError, match="несовместимые"):
+        score(*write_case(tmp_path, {"valid_extra": ["D-04"], key: other}))
+
+
 def test_stale_report_rejected(tmp_path):
     golden, report, decisions = write_case(tmp_path, {"hits": {"G01": ["D-01"]}})
     data = json.loads(report.read_text(encoding="utf-8"))

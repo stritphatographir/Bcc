@@ -33,15 +33,15 @@
     {
       "name": "Полный анализ до сверки цитат, один голос",
       "matched_defects": 25,
-      "true_positives": 69,
-      "false_positives": 13,
+      "true_positives": 78,
+      "false_positives": 27,
       "total_findings": 106
     },
     {
       "name": "Полный анализ после сверки цитат, один голос",
       "matched_defects": 25,
-      "true_positives": 69,
-      "false_positives": 9,
+      "true_positives": 78,
+      "false_positives": 23,
       "total_findings": 102
     }
   ]

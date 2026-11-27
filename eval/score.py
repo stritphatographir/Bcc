@@ -15,6 +15,7 @@ class Score:
     false_positives: int
     misses: list[str]
     total_findings: int
+    undecided: int = 0
 
 
 def score(golden: Path, report: Path, decisions: Path) -> Score:
@@ -45,10 +46,14 @@ def score(golden: Path, report: Path, decisions: Path) -> Score:
         positives.update(finding_index(reference, require_evidence=True) for reference in references)
         hits.add(goal)
     negatives = {finding_index(ref, require_evidence=False) for ref in review.get("false_positives", [])}
-    if positives & negatives:
+    extra = {finding_index(ref, require_evidence=True) for ref in review.get("valid_extra", [])}
+    undecided = {finding_index(ref, require_evidence=False) for ref in review.get("undecided", [])}
+    groups = (positives, extra, negatives, undecided)
+    if sum(map(len, groups)) != len(set().union(*groups)):
         raise ValueError("Один вывод получил две несовместимые оценки.")
     misses = [f"{key}. {value}" for key, value in defects.items() if key not in hits]
-    return Score(len(hits), len(defects), len(positives), len(negatives), misses, len(findings))
+    return Score(len(hits), len(defects), len(positives) + len(extra), len(negatives),
+                 misses, len(findings), len(undecided))
 
 
 def render_ablation(report: Path, ablation: Path) -> str:
@@ -83,6 +88,8 @@ def main():
     labeled = true + result.false_positives
     print(f"Precision: {true}/{labeled} ({true / labeled:.1%})" if labeled else "Precision: нет оценённых выводов")
     print(f"Оценено выводов: {labeled}/{result.total_findings}")
+    if result.undecided:
+        print(f"Недостаточно данных для оценки: {result.undecided}")
     for miss in result.misses:
         print(f"- {miss}")
     ablation = args.ablation
