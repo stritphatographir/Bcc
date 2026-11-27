@@ -195,6 +195,16 @@ Markdown занял 77,34 с при первом вызове Gemini и ещё 4
 67,45 с. Финальный Markdown собран за 1,05 с из 20 сохранённых ответов.
 В [более раннем прогоне Qwen без кэша](eval/runs/qwen-cold.json) Markdown занял 195 с.
 
+Паспорт `reports/report.md` показывает «Запросы к модели в этом прогоне — 0»: отчёт
+собран из 20 ответов Gemini, сохранённых в кэше по SHA-256 запроса. Прогон с живыми
+вызовами модели без кэша сохранён в `eval/runs/qwen-cold.json` (20 запросов к Qwen).
+
+Видео `docs/demo.mp4` записано на локальной модели Qwen (recall 25/30). Отправленный
+отчёт построен моделью Gemini `gemini-3.5-flash-lite` (recall 27/30). Код агента тот же,
+отличается только модель.
+
+CLI и `eval.score` всегда печатают в UTF-8, чтобы консоль Windows не падала на кириллице.
+
 ## Экспорт и сравнение версий
 
 ```bash
@@ -226,3 +236,5 @@ point `LLM_BASE_URL`/`LLM_API_KEY` at any OpenAI-compatible endpoint, including 
 model. Run: `python -m reqcheck examples/requirements.md -o reports/report.md`
 (MD + HTML + JSON). `--interactive` asks clarifying questions and re-checks. `pytest`
 runs offline with a mocked LLM.
+
+The submitted report was assembled from cached Gemini answers; a cold run with live calls is in `eval/runs/qwen-cold.json`. The demo video uses local Qwen (recall 25/30); the report uses Gemini `gemini-3.5-flash-lite` (recall 27/30). CLI output is always UTF-8.
