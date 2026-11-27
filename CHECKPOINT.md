@@ -12,6 +12,7 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Verified
 
+- Gemini baseline at `b0e381d`, 2026-11-27: default `gemini-3.8-flash` repeatedly returned HTTP 429. With `gemini-3.5-flash-lite`, Markdown first took 77.34 s (one stage missed the quota window); the full retry took 4.05 s (19 cache hits, one live answer, zero failed stages). PDF was full in 55.29 s (73 requirements, 65 findings); the independent merchant sample was full in 67.45 s (18 requirements, 32 findings). The complete Markdown report has 73 requirements, 62 findings and 50 questions. All 62 findings were adjudicated: recall 18/30 (60.0%), precision 51/62 (82.3%). G20, G27 and G30 are hits. Misses: G01, G02, G05, G06, G13, G14, G15, G16, G19, G21, G23, G25.
 - Follow-up Gemini setup: `main` synchronized with `origin`; a fresh Windows `.venv` installed all dependencies, `pip check` passed, and `pytest -q` passed all 58 tests, including `tests/test_web.py` (one Starlette deprecation warning). The live baseline awaits a replacement key in the ignored `.env`; the tracked template has an empty key field. No Gemini request was made during setup.
 - Project queue items 1?21 complete. CLI, web UI, simulator, evidence check, interactive Clarifier, generated QA artifacts, exports, version diff and scorer are in main. Git history preserves item-level checkpoints.
 - Scored Qwen report: 66 requirements, 102 findings, 67 questions, two simulator counterexamples, eight QA cases, four findings dropped. Twenty validated cache hits. Every final citation matched at its locator.
