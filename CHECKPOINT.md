@@ -12,6 +12,7 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Verified
 
+- Follow-up Gemini setup: `main` synchronized with `origin`; a fresh Windows `.venv` installed all dependencies, `pip check` passed, and `pytest -q` passed all 58 tests, including `tests/test_web.py` (one Starlette deprecation warning). The live baseline awaits a replacement key in the ignored `.env`; the tracked template has an empty key field. No Gemini request was made during setup.
 - Project queue items 1?21 complete. CLI, web UI, simulator, evidence check, interactive Clarifier, generated QA artifacts, exports, version diff and scorer are in main. Git history preserves item-level checkpoints.
 - Scored Qwen report: 66 requirements, 102 findings, 67 questions, two simulator counterexamples, eight QA cases, four findings dropped. Twenty validated cache hits. Every final citation matched at its locator.
 - Evaluation bound to the report hash: 25/30 recall (83.3%); 78 true, 23 false, one undecided, 77.2% precision over 101 decisions. Misses: G14, G15, G20, G21, G23.
