@@ -51,20 +51,24 @@ def plural(count: int, one: str, few: str, many: str) -> str:
 
 def render_markdown(result: Analysis) -> str:
     p = result.passport
+    duration = f"{(p.finished - p.started).total_seconds():.2f}".replace(".", ",")
     out = [
         "# Отчёт о проверке требований", "", "## Паспорт прогона", "",
         f"- Документ — {literal(p.document)}",
         f"- Начало — {p.started:%Y-%m-%d %H:%M:%S UTC}",
         f"- Окончание — {p.finished:%Y-%m-%d %H:%M:%S UTC}",
+        f"- Длительность — {duration} с",
         f"- Модель — {literal(p.model)}",
         f"- Провайдер — {literal(p.provider)}",
         f"- Версия агента — {literal(p.version)}",
         f"- SHA-256 документа — `{p.sha256}`",
-        f"- Запросы к модели — {p.calls} (успешных ответов — {p.responses})",
-        f"- Ответы из кэша — {p.cache_hits}",
+        f"- Запросы к модели в этом прогоне — {p.calls} (успешных ответов — {p.responses})",
+        f"- Ответы модели из кэша — {p.cache_hits} (получены ранее от той же модели; ключ кэша — SHA-256 запроса)",
         f"- Отклонённые выводы без подтверждённых цитат — {p.dropped}",
         f"- Режим — {p.mode}",
     ]
+    if p.calls == 0 and p.cache_hits > 0:
+        out.append("- Происхождение ответов — все ответы модели взяты из кэша предыдущего живого прогона")
     if p.llm_error:
         out.append("- Модель недоступна — " + literal(p.llm_error))
     if p.failed_agents:

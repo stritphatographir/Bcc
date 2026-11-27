@@ -16,6 +16,10 @@ def parser():
 def main():
     import sys
 
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
     if sys.argv[1:2] == ["diff"]:
         from .config import Settings
         from .diff import render_diff

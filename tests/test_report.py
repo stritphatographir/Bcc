@@ -39,3 +39,32 @@ def test_russian_plural():
     forms = ("дефект", "дефекта", "дефектов")
     assert [plural(n, *forms) for n in (1, 2, 5, 11, 12, 21, 22, 25, 101, 111)] == [
         "дефект", "дефекта", "дефектов", "дефектов", "дефектов", "дефект", "дефекта", "дефектов", "дефект", "дефектов"]
+
+
+def test_passport_duration_and_cached_response_origin():
+    from datetime import datetime, timedelta, timezone
+    from pathlib import Path
+
+    from reqcheck.pipeline import Analysis
+    from reqcheck.report import render_markdown
+
+    result = Analysis.model_validate_json(Path("reports/report.json").read_bytes())
+    result.passport.started = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    result.passport.finished = result.passport.started + timedelta(seconds=1.25)
+    result.passport.calls = result.passport.responses = 0
+    result.passport.cache_hits = 20
+    markdown = render_markdown(result)
+    lines = [
+        "- Длительность — 1,25 с",
+        "- Запросы к модели в этом прогоне — 0 (успешных ответов — 0)",
+        "- Ответы модели из кэша — 20 (получены ранее от той же модели; ключ кэша — SHA-256 запроса)",
+        "- Происхождение ответов — все ответы модели взяты из кэша предыдущего живого прогона",
+    ]
+    for line in lines:
+        assert line in markdown
+        assert line[2:] in render_html(markdown)
+    assert markdown.index("- Окончание") < markdown.index(lines[0]) < markdown.index("- Модель")
+    result.passport.calls = 1
+    assert lines[-1] not in render_markdown(result)
+    result.passport.calls = result.passport.cache_hits = 0
+    assert lines[-1] not in render_markdown(result)
