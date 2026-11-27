@@ -35,6 +35,12 @@ Updated 2026-11-27 before submission. Owner: conductor.
 - Skipped on purpose: segmenter treating diagram arrows as requirements (would renumber R/D ids used in the video and adjudication).
 - Amir: give jury repo access, submit before 23:59 Almaty.
 
+## Competitor scan (2026-11-27 evening)
+
+- Scanned ~50 public GitHub repos for this hackathon (task forks `epitmure/`, `AdilPython/`; new repos `user1618phi/dalel`, `l9kk/themis`, `stetat/reqcheck`, `erv1y/hackathon_mnu_bcc`, `smokeyy999/bcc-requirements-validator`, `gojosatorukz/bcc-requirements-reviewer`, `Artmaster5/revizor-tz`, others). Verbatim-citation guard + 29148 critics are table stakes now. Our differentiators confirmed: simulator, interactive clarifier recheck, trace, local model + failover, 4 report formats.
+- Done: README jury navigation table + badges (135 offline tests), defense note in docs/demo.md. Docs only.
+- Not done for time: PDF report export, hosted jury report link, "confirmed defect vs question" column. Candidates before the 4 December final.
+
 ## Handoff
 
 - Current submission report: Gemini `gemini-3.5-flash-lite`, agent version `e18312c`, full analysis, zero failed checks, 73 requirements, 71 findings, 55 questions, 25 simulated scenarios. All 71 findings cited exact source text. Recall 27/30 (90.0%), precision 59/71 (83.1%), misses G13, G16, G25. The passport records 0.22 s for analysis using 20 cached Gemini responses. The Qwen video below is a separate run.
