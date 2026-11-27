@@ -52,6 +52,8 @@ def plural(count: int, one: str, few: str, many: str) -> str:
 def render_markdown(result: Analysis) -> str:
     p = result.passport
     duration = f"{(p.finished - p.started).total_seconds():.2f}".replace(".", ",")
+    cache_note = ("распределение по моделям приведено ниже" if p.switch_reason else
+                  "получены ранее от той же модели; ключ кэша — SHA-256 запроса")
     out = [
         "# Отчёт о проверке требований", "", "## Паспорт прогона", "",
         f"- Документ — {literal(p.document)}",
@@ -63,7 +65,7 @@ def render_markdown(result: Analysis) -> str:
         f"- Версия агента — {literal(p.version)}",
         f"- SHA-256 документа — `{p.sha256}`",
         f"- Запросы к модели в этом прогоне — {p.calls} (успешных ответов — {p.responses})",
-        f"- Ответы модели из кэша — {p.cache_hits} (получены ранее от той же модели; ключ кэша — SHA-256 запроса)",
+        f"- Ответы модели из кэша — {p.cache_hits} ({cache_note})",
         f"- Отклонённые выводы без подтверждённых цитат — {p.dropped}",
         f"- Режим — {p.mode}",
     ]
@@ -73,6 +75,18 @@ def render_markdown(result: Analysis) -> str:
         out.append("- Модель недоступна — " + literal(p.llm_error))
     if p.failed_agents:
         out.append("- Проверки без ответа — " + literal(", ".join(p.failed_agents)))
+    if p.switch_reason:
+        out.extend([
+            "- Переключение модели — " + literal(p.switch_reason),
+            "",
+            "В таблице указаны основная и резервная модели в порядке обращения.",
+            "",
+            "| Провайдер | Модель | Запросы | Успешные ответы без кэша | Ответы из кэша |",
+            "| --- | --- | --- | --- | --- |",
+        ])
+        for run in p.model_runs:
+            out.append(f"| {literal(run.provider)} | {literal(run.model)} | {run.calls} | "
+                       f"{run.responses} | {run.cache_hits} |")
 
     out.extend(["", "## Выделенные требования", "",
                 "| ID в отчёте | ID в документе | Краткая формулировка |",

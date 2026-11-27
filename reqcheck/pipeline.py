@@ -26,6 +26,14 @@ from .trace import TraceEvent, TraceLog
 from .verifier import verify
 
 
+class ModelRun(BaseModel):
+    provider: str
+    model: str
+    calls: int
+    responses: int  # Successful live responses; excludes cache hits.
+    cache_hits: int
+
+
 class Passport(BaseModel):
     document: str
     sha256: str
@@ -38,6 +46,8 @@ class Passport(BaseModel):
     cache_hits: int
     responses: int = 0
     llm_error: str = ""
+    switch_reason: str = ""
+    model_runs: list[ModelRun] = Field(default_factory=list)
     dropped: int
     failed_agents: list[str]
     mode: str
@@ -90,6 +100,7 @@ def analyze(path: Path, settings: Settings, *,
     failed = []
     with Client(settings) as client:
         client.trace = trace
+        client.on_switch = progress
         requirements, incomplete = segment(sources, client)
         if incomplete:
             failed.append("Сегментация")
@@ -140,6 +151,8 @@ def analyze(path: Path, settings: Settings, *,
         started=started, finished=datetime.now(timezone.utc), calls=client.calls,
         cache_hits=client.hits, responses=client.responses - client.hits,
         llm_error=client.offline or "", dropped=dropped, failed_agents=failed, mode=mode,
+        switch_reason=getattr(client, "switch_reason", ""),
+        model_runs=getattr(client, "model_runs", []),
     )
     qa = build_qa(requirements, findings, simulation, sources, follow_up)
     quality = score_quality(requirements, findings, failed)
