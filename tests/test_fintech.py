@@ -44,3 +44,18 @@ def test_retained_financial_identifiers_need_a_retention_policy():
     assert all(item.code != "identifier-retention" for item in review_fintech(prohibited, []))
     assert all(item.code != "identifier-retention" for item in review_fintech(inline, []))
     assert any(item.code == "identifier-retention" for item in review_fintech(sources + [unrelated], []))
+
+
+def test_dispatch_marker_requires_an_event_for_setting_it():
+    records = [Source(locator="1", text="Хранить сумму выплаты и флаг отправки документа.")]
+    confirmed = Source(locator="2", text="Флаг отправки документа устанавливается после подтверждения доставки.")
+    confirmed_first = Source(locator="3", text="После подтверждения доставки система устанавливает флаг отправки документа.")
+    external = Source(locator="4", text="Показывать статус доставки выплаты, полученный от банка без изменений.")
+    rule = 'dispatch-marker-event'
+
+    findings = [f for f in review_fintech(records, []) if f.code == rule]
+    assert len(findings) == 1 and findings[0].evidence[0].locator == "1"
+    assert verify(findings, records)[1] == 0
+    assert all(f.code != rule for f in review_fintech(records + [confirmed], []))
+    assert all(f.code != rule for f in review_fintech(records + [confirmed_first], []))
+    assert all(f.code != rule for f in review_fintech([external], []))
