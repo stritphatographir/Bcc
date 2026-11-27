@@ -26,6 +26,7 @@ def finding_lines(identifier: str, finding: Finding) -> list[str]:
         "",
         f"- Дефект — {literal(finding.explanation)}",
         f"- Правка — {literal(finding.fix)}",
+        f"- Доказательство — цитата найдена в документе дословно; агент {literal(finding.agent)}",
         "",
     ]
 
