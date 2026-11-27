@@ -2,6 +2,10 @@
 
 Updated 2026-11-27 before submission. Owner: conductor.
 
+## Final jury check
+
+- Clean Windows clone, Python 3.13: dependency check passed. Plain `pytest` initially failed to import the project in 19 modules. Setting the pytest import path to the repository root let all 98 tests pass.
+
 ## Final fixes (2026-11-27 evening, conductor: Claude in user session)
 
 - Done: 4c8ab96 UTF-8 console output for reqcheck and eval.score, passport shows duration and labels cached answers, defense answer in docs/demo.md. 70 tests pass.
