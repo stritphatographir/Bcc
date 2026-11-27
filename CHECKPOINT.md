@@ -6,6 +6,10 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 - Clean Windows clone, Python 3.13: dependency check passed. Plain `pytest` initially failed to import the project in 19 modules. Setting the pytest import path to the repository root let all 98 tests pass.
 - Checked the jury README against the scored JSON and video. The quick start now writes to `reports/run/`, preserving the scored report. Corrected the model attribution, analysis time and instructions for finding the same example in a new run.
+- Windows Python 3.13 and local Debian Docker Python 3.11.18 passed dependency checks and all 98 tests. Both reproduced 27/30 recall and 59/71 precision. SSH on the requested homelab closed before login, then the host went offline on Tailscale.
+- One-vote Qwen CLI: Markdown 168.70 s, 20 live responses, zero cache hits; PDF 179.08 s, 19 live responses and one cache hit. Full analysis in both. All 157 MD and 163 PDF finding citations matched their locators. The submitted Gemini report also passed all 106 citation checks and matched its rendered Markdown, HTML and JSONL trace.
+- Edge passed upload, eight stages, source highlighting, linked question, answer/recheck and JSON download with six new model responses. CLI interactive answer, offline fallback for PDF/DOCX/TXT/HTML and the second Markdown spec, Jira CSV/JSON, DOCX export and report diff passed. The demo decoded with Russian audio and subtitles, 2:46.52. The organizer input matched byte for byte.
+- Submission ZIPs are local in `dist/`. Use the archive named for the current Git commit. The older `1ae1191` archive contains an earlier report. The repository is private; Amir grants jury access and submits.
 
 ## Final fixes (2026-11-27 evening, conductor: Claude in user session)
 
