@@ -8,6 +8,13 @@ WEAK = re.compile(
     r"\b(быстро|удобно|при необходимости|своевременно|достаточно|и/или|около|максимально|"
     r"как правило|по возможности|разумный срок|и т\.\s*[дп]\.)", re.I,
 )
+REQUEST_BODY = re.compile(r"\b(?:request body|тело запроса)\b", re.I)
+MEDIA_TYPE_HEADER = re.compile(r"\bcontent-type\s*[:|]\s*[\w.+-]+/[\w.+-]+", re.I)
+CONDITIONAL = re.compile(r"\b(?:если|когда|при\s+условии|if|when|unless)\b", re.I)
+NO_REQUEST_BODY = re.compile(
+    r"\b(?:тело(?:\s+запроса)?\s+не\s+(?:используется|переда[её]тся|предусмотрено)|"
+    r"без\s+тела|no\s+request\s+body|request\s+body\s+is\s+not\s+(?:used|sent))\b", re.I,
+)
 
 
 def lint(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
@@ -31,9 +38,16 @@ def lint(sources: list[Source], requirements: list[Requirement]) -> list[Finding
                 f"Заменить «{word}» измеримым условием с единицей и пределом.",
                 f"Какое наблюдаемое условие или предельное значение заменит «{word}»?", requirement)
 
+    body_media_type = {}
+    no_body = {}
     for index, source in enumerate(sources):
         body = source.text
         section = source.section[-1] if source.section else ""
+        if not source.heading and REQUEST_BODY.search(section) and not CONDITIONAL.search(f"{section} {body}"):
+            if MEDIA_TYPE_HEADER.search(re.sub(r"[*`_]", "", body)):
+                body_media_type.setdefault(source.section, source)
+            if NO_REQUEST_BODY.search(body):
+                no_body.setdefault(source.section, source)
         if source.heading and re.search(r"требован|критери|согласующ|архитектур", body, re.I):
             if index == len(sources) - 1 or sources[index + 1].heading and len(sources[index + 1].section) <= len(source.section):
                 add("empty-section", "Полнота", "major", [source], f"Раздел «{section}» пуст.",
@@ -59,6 +73,16 @@ def lint(sources: list[Source], requirements: list[Requirement]) -> list[Finding
                 "В одном правиле хранения указаны разные денежные единицы. Правило перевода отсутствует.",
                 "Задать единицу сравнения сумм, пересчёт и округление.",
                 "В какой единице сравниваются суммы и как округляются дробные значения?")
+
+    for section, media_type in body_media_type.items():
+        omitted = no_body.get(section)
+        if omitted:
+            add("content-type-without-body", "Согласованность", "major",
+                [media_type] if media_type == omitted else [media_type, omitted],
+                "Для тела запроса указан Content-Type, но тот же раздел говорит, что тело не передаётся. "
+                "Неясно, следует ли клиенту отправлять этот заголовок при отсутствии тела.",
+                "Убрать требование к заголовку для запроса без тела или описать тело и его формат.",
+                "Должен ли клиент отправлять Content-Type при отсутствии тела запроса?")
 
     for index, source in enumerate(sources):
         table = re.sub(r"[*`]", "", source.text)
