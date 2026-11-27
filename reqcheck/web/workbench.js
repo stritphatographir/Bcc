@@ -8,6 +8,8 @@ const placeholder = document.querySelector("#placeholder");
 const views = document.querySelector("#views");
 const questions = document.querySelector("#questions");
 const recheck = document.querySelector("#recheck");
+const answerStatus = document.querySelector("#answer-status");
+const answerFields = new Map();
 const rows = new Map();
 let result;
 let sourceFile;
@@ -35,6 +37,8 @@ function fillSource(event) {
   source.replaceChildren();
   findings.replaceChildren();
   rows.clear();
+  document.querySelector("#finding-questions").replaceChildren(
+    element("p", "Выберите дефект, чтобы открыть связанный вопрос."));
   for (const item of event.source) {
     const row = element("p");
     const content = element("code", item.text);
@@ -47,7 +51,27 @@ function fillSource(event) {
     const button = element("button", id + " · " + finding.criterion);
     button.type = "button";
     button.title = finding.explanation;
+    button.setAttribute("aria-pressed", "false");
     button.addEventListener("click", () => {
+      findings.querySelectorAll("button").forEach(item => {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
+      const related = document.querySelector("#finding-questions");
+      related.replaceChildren();
+      for (const question of event.analysis.questions.filter(item => item.finding_ids.includes(id))) {
+        const open = element("button", id + " → " + question.id + " · Ответить на вопрос");
+        open.type = "button";
+        open.addEventListener("click", () => {
+          showPanel("questions");
+          const field = answerFields.get(question.id);
+          field?.focus({ preventScroll: true });
+          field?.scrollIntoView({ block: "center" });
+        });
+        related.append(open);
+      }
+      if (!related.querySelectorAll("button").length) {
+        related.append(element("p", id + " · Связанного вопроса нет."));
+      }
       for (const row of rows.values()) row.content.textContent = row.text;
       for (const evidence of finding.evidence) {
         const item = rows.get(evidence.locator);
@@ -66,6 +90,7 @@ function fillSource(event) {
 function fillArtifacts(event) {
   const questionList = document.querySelector("#question-list");
   questionList.replaceChildren();
+  answerFields.clear();
   recheck.hidden = !event.analysis.questions.length;
   for (const question of event.analysis.questions) {
     const label = element("label", question.id + " · " + question.stakeholder + " · " + question.text);
@@ -73,6 +98,7 @@ function fillArtifacts(event) {
     field.maxLength = 2000;
     field.dataset.id = question.id;
     field.dataset.question = question.text;
+    answerFields.set(question.id, field);
     field.value = event.analysis.answers.find(answer => answer.question.id === question.id)?.text ?? "";
     label.append(element("small", question.finding_ids.join(", ")));
     for (const related of question.related ?? []) label.append(element("small", "Также: " + related));
@@ -142,11 +168,12 @@ function showEvent(event) {
   }
 }
 
-async function analyze(data) {
+async function analyze(data, isRecheck = false) {
   start.disabled = true;
   recheck.disabled = true;
   stages.replaceChildren();
   status.textContent = "Загрузка документа…";
+  if (isRecheck) answerStatus.textContent = "Перепроверка… Ответы ещё не подтверждены.";
 
   try {
     const response = await fetch("/api/analyze", { method: "POST", body: data });
@@ -175,8 +202,15 @@ async function analyze(data) {
     } finally {
       await reader.cancel();
     }
+    if (isRecheck) {
+      const message = "Сохранено ответов: " + result.analysis.answers.length + ". Перепроверка завершена.";
+      answerStatus.textContent = message;
+      status.textContent = message + " " + result.analysis.passport.mode;
+      showPanel("questions");
+    }
   } catch (error) {
     status.textContent = error.message;
+    if (isRecheck) answerStatus.textContent = "Ответы не подтверждены. " + error.message;
   } finally {
     start.disabled = false;
     recheck.disabled = false;
@@ -192,6 +226,7 @@ form.addEventListener("submit", event => {
   downloads.hidden = true;
   placeholder.hidden = false;
   result = undefined;
+  answerStatus.textContent = "Введите ответы и отправьте на перепроверку.";
   sourceFile = file;
   void analyze(data);
 });
@@ -203,12 +238,13 @@ questions.addEventListener("submit", event => {
   })).filter(answer => answer.text);
   if (!answers.length || !sourceFile) {
     status.textContent = "Введите хотя бы один ответ.";
+    answerStatus.textContent = status.textContent;
     return;
   }
   const data = new FormData();
   data.set("document", sourceFile);
   data.set("answers", JSON.stringify(answers));
-  void analyze(data);
+  void analyze(data, true);
 });
 
 downloads.addEventListener("click", event => {

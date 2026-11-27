@@ -63,6 +63,8 @@ iframe { display: block; width: 100%; height: min(75vh, 58rem); border: 0; }
 #findings, #source-lines { max-height: 65vh; overflow: auto; padding: .8rem; }
 #findings { border-inline-end: 1px solid var(--line); }
 #findings button { width: 100%; text-align: start; margin-bottom: .4rem; overflow-wrap: anywhere; }
+#findings button[aria-pressed="true"] { border-color: var(--accent); background: var(--paper); }
+#finding-questions { grid-column: 1 / -1; padding: .8rem; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: .5rem; }
 #source-lines p { padding: .35rem; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
 #source-lines span { color: var(--muted); margin-inline-end: .65rem; font-size: .8rem; }
 mark { background: #ffe393; color: #312410; }
@@ -71,7 +73,10 @@ mark { background: #ffe393; color: #312410; }
 textarea { width: 100%; resize: vertical; min-height: 3.5rem; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--ink); padding: .6rem; font: inherit; }
 .content-view details { border-bottom: 1px solid var(--line); padding: .55rem 0; }
 .content-view summary { cursor: pointer; }
-#recheck { justify-self: start; margin-block-start: .65rem; }
+#questions { max-height: 75vh; overflow-y: auto; scroll-padding-block: 7rem 1rem; }
+.question-actions { position: sticky; top: -1.15rem; z-index: 1; background: var(--panel); padding-block: .7rem; border-bottom: 1px solid var(--line); }
+#recheck { justify-self: start; }
+#recheck:disabled { opacity: .65; cursor: wait; }
 @media (max-width: 690px) {
   .workspace { grid-template-columns: minmax(0, 1fr); }
   aside { border-inline-end: 0; border-bottom: 1px solid var(--line); }

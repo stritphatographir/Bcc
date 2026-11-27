@@ -49,12 +49,18 @@
         </nav>
         <iframe id="report" class="view" title="Отчёт о проверке требований" sandbox hidden></iframe>
         <div id="source" class="view source-view" hidden>
+          <div id="finding-questions" aria-label="Вопросы по выбранному дефекту">
+            <p>Выберите дефект, чтобы открыть связанный вопрос.</p>
+          </div>
           <div id="findings" aria-label="Дефекты"></div>
           <div id="source-lines" tabindex="0" aria-label="Текст документа"></div>
         </div>
         <form id="questions" class="view content-view" hidden>
+          <div class="question-actions">
+            <button id="recheck" type="submit">Перепроверить с ответами</button>
+            <p id="answer-status" role="status">Введите ответы и отправьте на перепроверку.</p>
+          </div>
           <div id="question-list"></div>
-          <button id="recheck" type="submit">Перепроверить с ответами</button>
         </form>
         <div id="test-cases" class="view content-view" hidden></div>
         <div id="trace" class="view content-view" hidden></div>
