@@ -53,7 +53,7 @@ def main():
         from .exports import export
         from .pipeline import Analysis
 
-        command = argparse.ArgumentParser(prog="reqcheck export", description="Экспорт отчёта в DOCX и Jira")
+        command = argparse.ArgumentParser(prog="reqcheck export", description="Экспорт отчёта в DOCX, PDF и Jira")
         command.add_argument("report", type=Path)
         command.add_argument("-o", "--output", type=Path, required=True, help="Путь и имя без расширения")
         args = command.parse_args(sys.argv[2:])
@@ -73,7 +73,7 @@ def main():
     command = parser()
     args = command.parse_args()
     destinations = {args.output, args.output.with_suffix(".html"), args.output.with_suffix(".json"),
-                    args.output.with_suffix(".trace.jsonl")}
+                    args.output.with_suffix(".trace.jsonl"), args.output.with_suffix(".pdf")}
     if args.input.resolve() in {path.resolve() for path in destinations}:
         command.error("Входной файл совпадает с одним из файлов отчёта.")
     try:
@@ -85,6 +85,14 @@ def main():
         paths = write(result, args.output)
     except (ValueError, OSError) as exc:
         command.error(str(exc))
+    try:
+        from .exports import _pdf
+
+        pdf = args.output.with_suffix(".pdf")
+        _pdf(args.output.read_text(encoding="utf-8"), pdf)
+        paths = (*paths, pdf)
+    except Exception as exc:  # PDF is a convenience copy; the Markdown report is the deliverable
+        print(f"PDF не создан: {exc}", file=sys.stderr)
     for path in paths:
         print(path)
 

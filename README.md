@@ -12,7 +12,7 @@
 
 | Что | Где |
 | --- | --- |
-| Отчёт по документу организаторов | [report.md](reports/report.md) · [HTML для браузера](reports/report.html) · [JSON](reports/report.json) |
+| Отчёт по документу организаторов | [report.md](reports/report.md) · [HTML для браузера](reports/report.html) · [PDF](reports/report.pdf) · [DOCX](reports/report.docx) · [JSON](reports/report.json) |
 | Видеодемо с русской озвучкой, 2:47 | [docs/demo.mp4](docs/demo.mp4) |
 | Запуск одной командой | [ниже](#запуск-одна-команда) |
 | Архитектура агентов и схема | [ниже](#архитектура) |
@@ -142,7 +142,7 @@ CLI и веб-интерфейс показывают переключение. 
 python -m reqcheck examples/requirements.md -o reports/run/report.md
 ```
 
-Новый отчёт пишется в `reports/run/` в файлы `report.md`, `report.html` и `report.json`.
+Новый отчёт пишется в `reports/run/` в файлы `report.md`, `report.html`, `report.pdf` и `report.json`.
 Команда оценки использует сохранённый конкурсный отчёт `reports/report.json`.
 Журнал `reports/run/report.trace.jsonl` показывает этапы, хеши запросов, время, попадания кэша
 и токены, если провайдер их указал.
@@ -280,7 +280,7 @@ python -m reqcheck export reports/report.json -o reports/review
 python -m reqcheck diff specs/old.md specs/new.md -o reports/diff.md
 ```
 
-Экспорт создаёт DOCX и выгрузки Jira в CSV и JSON. CSV можно загрузить через импорт
+Экспорт создаёт DOCX, PDF (кириллица, шрифт DejaVu в пакете) и выгрузки Jira в CSV и JSON. CSV можно загрузить через импорт
 Jira с сопоставлением полей. В JSON сохранены поля задачи для интеграции.
 Для сравнения можно передать готовые JSON-отчёты и повторно использовать результаты.
 Сравнение связывает выводы по критерию и цитате, включая перемещённые строки.
