@@ -68,7 +68,7 @@ def render_markdown(result: Analysis) -> str:
         f"- Режим — {p.mode}",
     ]
     if p.calls == 0 and p.cache_hits > 0:
-        out.append("- Происхождение ответов — все ответы модели взяты из кэша предыдущего живого прогона")
+        out.append("- Происхождение ответов — все ответы модели в этом прогоне получены из кэша")
     if p.llm_error:
         out.append("- Модель недоступна — " + literal(p.llm_error))
     if p.failed_agents:

@@ -2,6 +2,15 @@
 
 Updated 2026-11-27 before submission. Owner: conductor.
 
+## Final fixes (2026-11-27 evening, conductor: Claude in user session)
+
+- Done: 4c8ab96 UTF-8 console output for reqcheck and eval.score, passport shows duration and labels cached answers, defense answer in docs/demo.md. 70 tests pass.
+- Done: 36febc5 re-rendered reports/report.md and .html from the unchanged report.json; scorer still 27/30, 59/71.
+- Blocked: Gemini returns HTTP 403 again on this network; the cached Gemini answers for the submission report are no longer on disk, so a cold Gemini run is not possible now. Live-call evidence: eval/runs/qwen-cold.json.
+- Running: blind golden set eval/golden_settlement.md (21 defects, written before the agent ran), Qwen run and adjudication in eval/runs/settlement/. Then README notes and astra review.
+- Skipped on purpose: segmenter treating diagram arrows as requirements (would renumber R/D ids used in the video and adjudication).
+- Amir: give jury repo access, submit before 23:59 Almaty.
+
 ## Handoff
 
 - Current submission report: Gemini `gemini-3.5-flash-lite`, agent version `e18312c`, full analysis, zero failed checks, 73 requirements, 71 findings, 55 questions, 25 simulated scenarios. All 71 findings cited exact source text. Recall 27/30 (90.0%), precision 59/71 (83.1%), misses G13, G16, G25. Final Markdown assembly took 1.05 s using 20 cached Gemini responses. The Qwen video below is a separate run.
