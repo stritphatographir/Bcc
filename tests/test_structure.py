@@ -1,5 +1,5 @@
 from reqcheck.loader import Source
-from reqcheck.structure import duplicated_rules, happy_path_diagrams
+from reqcheck.structure import duplicated_rules, happy_path_diagrams, review_structure
 from reqcheck.verifier import verify
 
 
@@ -31,4 +31,19 @@ def test_rule_repeated_in_another_section_is_flagged_but_tables_are_not():
     findings = duplicated_rules(sources, [])
     assert len(findings) == 1
     assert [e.locator for e in findings[0].evidence] == ["1", "2"]
+    assert verify(findings, sources)[1] == 0
+
+
+def test_default_toggle_does_not_define_initial_numeric_value():
+    sources = [
+        src("2", "Оператор устанавливает интервал от 15 до 90 минут. По умолчанию автообновление отключено.", "Журнал"),
+        src("3", "Оператор выбирает глубину от 2 до 10 уровней. По умолчанию глубина равна 4.", "Выгрузка"),
+        src("4", "Оператор задаёт размер от 12 до 24 знаков. По умолчанию подсказки отключены.", "Печать"),
+        src("5", "Начальный размер составляет 18 знаков.", "Печать"),
+        src("6", "Оператор задаёт ёмкость от 20 до 80 единиц. По умолчанию ёмкость не задана.", "Планирование"),
+        src("7", "По умолчанию интервал равен 10 минутам.", "Распределение"),
+    ]
+    findings = [item for item in review_structure(sources, []) if item.code == "missing-numeric-default"]
+    assert len(findings) == 1
+    assert findings[0].evidence[0].locator == "2"
     assert verify(findings, sources)[1] == 0

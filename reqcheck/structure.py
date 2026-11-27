@@ -2,8 +2,9 @@
 
 * happy-path diagrams: a process / sequence diagram written as an arrow chain with no alternative branch;
 * duplicated rules: the same rule stated twice in different prose sections (IEEE 830 §4.3.7 modifiable).
+* missing numeric default: a configurable range is described alongside a separate toggle default.
 
-Both checks are generic: they rely on headings, arrows and word stems, never on document facts.
+Checks rely on headings, markup and word patterns, never on document facts.
 """
 import re
 
@@ -21,6 +22,15 @@ BRANCH = re.compile(
 STOP = {"если", "когда", "также", "этого", "этот", "который", "которая", "которые", "должен", "должна",
         "должно", "должны", "может", "могут", "после", "перед", "через", "между", "только"}
 SENTENCE = re.compile(r"[^.!?\n]+[.!?]?")
+ADJUSTABLE_RANGE = re.compile(
+    r"\b(?:зада[её]т|задают|устанавлива\w+|настраива\w+|выбира\w+|изменя\w+)\s+"
+    r"(?:[а-яё-]+\s+){0,3}(?P<name>[а-яё-]+)\s+от\s+\d[\d\s,]*\s+до\s+\d",
+    re.I,
+)
+DEFAULT = re.compile(r"\bпо\s+умолчанию\b", re.I)
+TOGGLE_STATE = re.compile(r"\b(?:отключ|выключ|включ|активир|деактивир)\w*", re.I)
+INITIAL = re.compile(r"\b(?:начальн|исходн)\w*", re.I)
+DEFAULT_VALUE = re.compile(r"\d|\b(?:не\s+(?:задан|установлен)\w*|без\s+значения|пуст\w*)\b", re.I)
 
 
 def _stems(text: str) -> set[str]:
@@ -88,5 +98,34 @@ def duplicated_rules(sources: list[Source], requirements: list[Requirement], thr
     return result
 
 
+def missing_numeric_defaults(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
+    prose = [source for source in sources if not source.heading]
+    clauses = [(source, clause) for source in prose for clause in SENTENCE.findall(source.text)
+               if DEFAULT.search(clause) or INITIAL.search(clause)]
+    findings = []
+    for source in prose:
+        match = ADJUSTABLE_RANGE.search(source.text)
+        if not match or not any(block == source and DEFAULT.search(clause) and TOGGLE_STATE.search(clause)
+                                for block, clause in clauses):
+            continue
+        name = match['name'].casefold()
+        stem = name[:5]
+        if any(block.section == source.section and DEFAULT_VALUE.search(clause)
+               and re.search(rf"\b{re.escape(stem)}\w*", clause, re.I) for block, clause in clauses):
+            continue
+        refs = [item.id for item in requirements if item.source.locator == source.locator]
+        findings.append(Finding(
+            code="missing-numeric-default", criterion="Полнота", severity="major",
+            evidence=[Evidence(locator=source.locator, quote=source.text)],
+            explanation=f"Описаны допустимый диапазон параметра «{name}» и исходное состояние функции. "
+                        "Не определено числовое значение до первой настройки или что его нет.",
+            fix=f"Указать начальное значение параметра «{name}» или явно описать состояние без значения.",
+            question=f"Какое значение параметра «{name}» нужно показывать до первого сохранения?",
+            requirements=refs, scope="requirement" if refs else "set", agent="structure",
+        ))
+    return findings
+
+
 def review_structure(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
-    return happy_path_diagrams(sources) + duplicated_rules(sources, requirements)
+    return (happy_path_diagrams(sources) + duplicated_rules(sources, requirements)
+            + missing_numeric_defaults(sources, requirements))
