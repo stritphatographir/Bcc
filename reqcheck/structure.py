@@ -43,6 +43,24 @@ MONTH = re.compile(r"\b(?:" + "|".join(f'(?P<m{i}>{word})' for i, word in enumer
 DATE = re.compile(r"\b(?:[1-9]|[12]\d|3[01])\s+(?:" + "|".join(MONTH_WORDS) + r")\b", re.I)
 ACCEPTANCE = re.compile(r"при[её]м|acceptance", re.I)
 MONTHLY_OUTPUT = re.compile(r"\b(?:месяц\w*|реестр\w*|сч[её]тчик\w*|период\w*|отч[её]т\w*)\b", re.I)
+ONCE_PER_PERIOD = re.compile(
+    r"\b(?:не\s+более|максимум)\s+(?:один|одна|одно|одной|1)\s+(?P<action>[^.!?]{2,40}?)\s+"
+    r"(?:за|в)\s+(?P<period>(?:календарн\w*\s+)?(?:минут\w*|час\w*|день|сутк\w*|недел\w*|месяц\w*|год\w*))\b",
+    re.I,
+)
+CAP_EXCEPTION = re.compile(r"\b(?:кроме|исключени\w*|за\s+исключени\w*|либо)\b", re.I)
+SETTING_CHANGE = re.compile(r"\b(?:при|после)\s+(?:изменен\w*|смен\w*|перенастрой\w*|обновлен\w*)\b", re.I)
+UNCONDITIONAL_REPEAT = re.compile(
+    r"\b(?:следующ\w*|повторн\w*|нов\w*)[^.!?]{0,60}"
+    r"\b(?:вызыва\w*|отправля\w*|созда\w*|формиру\w*|запуска\w*)\s+(?P<action>[^.!?]{2,40}?)\s+"
+    r"(?:независимо\s+от|без\s+уч[её]та|игнорируя)\s+"
+    r"(?:истори\w*|(?:предыдущ\w*|прошл\w*)\s+(?:срабатыв|отправ|выполн|исполн)\w*)\b", re.I,
+)
+REPEAT_WITHIN_CAP = re.compile(
+    r"\b(?:следующ\w*|нов\w*)\s+(?:календарн\w*\s+)?(?:минут\w*|час\w*|дн[яею]\w*|день|сутк\w*|"
+    r"недел\w*|месяц\w*|год\w*|период\w*)\b|\b(?:лимит|ограничение)\s+(?:не\s+исчерпан\w*|"
+    r"не\s+превышен\w*|действует|сохраняется)\b|\bв\s+пределах\s+(?:лимит|ограничен)\w*", re.I,
+)
 
 
 def _stems(text: str) -> set[str]:
@@ -172,6 +190,34 @@ def acceptance_month_conflicts(sources: list[Source], requirements: list[Require
     return findings
 
 
+def period_cap_repeat_conflicts(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
+    prose = [s for s in sources if not s.heading and s.section and not s.text.startswith('|')]
+    caps = [(s, m) for s in prose if (m := ONCE_PER_PERIOD.search(s.text)) and not CAP_EXCEPTION.search(s.text)]
+    findings = []
+    for repeat in prose:
+        if (not SETTING_CHANGE.search(repeat.text) or not (new := UNCONDITIONAL_REPEAT.search(repeat.text))
+                or REPEAT_WITHIN_CAP.search(repeat.text)):
+            continue
+        for limit, cap in caps:
+            action = _stems(new['action'])
+            if repeat == limit or repeat.section != limit.section or not action or not action <= _stems(cap['action']):
+                continue
+            refs = [r.id for r in requirements if r.source.locator in {limit.locator, repeat.locator}]
+            name = new['action'].strip()
+            findings.append(Finding(
+                code='period-cap-repeat-conflict', criterion='Согласованность', severity='critical',
+                evidence=[Evidence(locator=s.locator, quote=s.text) for s in (limit, repeat)],
+                explanation=f'Рассмотрим «{name}», которое уже произошло за период «{cap["period"]}». '
+                            'Настройка меняется, а новое событие в том же периоде удовлетворяет условиям повтора. '
+                            'Лимит запрещает повтор, а второе правило требует действие независимо от истории.',
+                fix='Указать, действует ли лимит после изменения настройки, и согласовать оба правила.',
+                question='Если действие уже было в этом периоде, может ли смена настройки разрешить повтор?',
+                requirements=refs, scope='set', agent='structure',
+            ))
+    return findings
+
+
 def review_structure(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
     return (happy_path_diagrams(sources) + duplicated_rules(sources, requirements)
-            + missing_numeric_defaults(sources, requirements) + acceptance_month_conflicts(sources, requirements))
+            + missing_numeric_defaults(sources, requirements) + acceptance_month_conflicts(sources, requirements)
+            + period_cap_repeat_conflicts(sources, requirements))

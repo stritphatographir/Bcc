@@ -15,6 +15,7 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Verified
 
+- Gemini iteration 11, kept: detect a per-period cap and a repeat after reconfiguration that ignores history. Check skips explicitly guarded repeats and cases deferred to a new period. G01 added; recall 27/30 (90.0%), precision 59/71 (83.1%). Independent example stayed at 31 findings. Tests: 65 passed. Stopped after five additional iterations because the target was reached.
 - Gemini iteration 10, kept: compare an explicit month-attribution rule with a cross-month acceptance row. The check distinguishes a month assigned to the result from the date of a separate action. G02 added; recall 26/30 (86.7%), precision 58/70 (82.9%). Independent example stayed at 31 findings. Tests: 64 passed.
 - Gemini iteration 9, reverted: separate model critic for period-boundary conflicts returned no findings on the scored sample. Recall stayed 25/30 (83.3%), precision 57/69 (82.6%). The independent sample added one supported but redundant conflict (31 to 32 findings).
 - Gemini iteration 8, kept: check that a locally stored or updated dispatch marker has a defined transition event. G19 added; recall 25/30 (83.3%), precision 57/69 (82.6%). Independent example stayed at 31 findings. Checker cases for event-first wording and externally owned status are tested. Tests: 63 passed.
