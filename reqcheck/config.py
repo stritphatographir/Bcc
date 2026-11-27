@@ -22,6 +22,7 @@ class Settings:
     critic_votes: int = 1
     concurrency: int = 3
     max_retries: int = 5
+    use_json_schema: bool = False
 
     @classmethod
     def from_env(cls):
@@ -45,4 +46,5 @@ class Settings:
             disable_thinking=os.getenv("REQCHECK_DISABLE_THINKING", "1" if local else "0") == "1",
             critic_votes=votes, concurrency=concurrency,
             max_retries=int(os.getenv("REQCHECK_MAX_RETRIES", "5")),
+            use_json_schema=os.getenv("REQCHECK_JSON_SCHEMA", "0") == "1",
         )

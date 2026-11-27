@@ -11,6 +11,31 @@ class Result(BaseModel):
     answer: int
 
 
+def test_server_schema_mode_has_its_own_validated_cache(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("LLM_BASE_URL", "http://test/v1")
+    monkeypatch.setenv("LLM_MODEL", "test")
+    monkeypatch.delenv("REQCHECK_JSON_SCHEMA", raising=False)
+    formats = []
+    contents = iter(['{"answer": 1}', '{"wrong": 2}', '{"answer": 2}'])
+
+    def respond(request):
+        formats.append(json.loads(request.content).get("response_format"))
+        return httpx.Response(200, json={"choices": [{"message": {"content": next(contents)}}]})
+
+    transport = httpx.MockTransport(respond)
+    with Client(Settings.from_env(), transport=transport) as ordinary:
+        assert ordinary.ask("task", {}, Result).answer == 1
+    monkeypatch.setenv("REQCHECK_JSON_SCHEMA", "1")
+    with Client(Settings.from_env(), transport=transport) as constrained:
+        assert constrained.ask("task", {}, Result).answer == 2
+        assert (constrained.calls, constrained.responses, constrained.hits) == (2, 1, 0)
+        assert constrained.ask("task", {}, Result).answer == 2
+        assert constrained.hits == 1
+    expected = {"type": "json_schema", "json_schema": {"name": "Result", "schema": Result.model_json_schema()}}
+    assert formats == [None, expected, expected]
+
+
 def test_retry_and_cache(tmp_path):
     responses = iter(["not JSON", '{"answer": 42}'])
 

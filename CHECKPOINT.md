@@ -4,6 +4,8 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Final jury check
 
+- Homelab follow-up on 2026-11-27: authenticated over Ethernet. The Docker bridge routed PyPI, GitHub and Google through the LAN gateway on `eno1`. Fresh Python 3.12 venv, dependency check, published scores, all 106 submission citations, five input types, CLI Q&A, exports, diff, Chromium fallback flow, input hash, video and submission archive passed. Google rejected the configured key (`API_KEY_INVALID`); the CLI made one request and reported rules-only mode.
+- A small CPU Qwen returned malformed critic output. Added optional `REQCHECK_JSON_SCHEMA=1` for providers that accept schema-guided generation. Verified the critic schema with llama.cpp. Default requests and report scoring keep their existing behavior. All 99 tests passed on the Windows workstation and in the homelab container.
 - Clean Windows clone, Python 3.13: dependency check passed. Plain `pytest` initially failed to import the project in 19 modules. Setting the pytest import path to the repository root let all 98 tests pass.
 - Checked the jury README against the scored JSON and video. The quick start now writes to `reports/run/`, preserving the scored report. Corrected the model attribution, analysis time and instructions for finding the same example in a new run.
 - Windows Python 3.13 and local Debian Docker Python 3.11.18 passed dependency checks and all 98 tests. Both reproduced 27/30 recall and 59/71 precision. SSH on the requested homelab closed before login, then the host went offline on Tailscale.
