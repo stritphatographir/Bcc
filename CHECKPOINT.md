@@ -2,6 +2,8 @@
 
 Updated 2026-11-27 before submission. Owner: conductor.
 
+- Submission form handoff: it accepts a public repository or a private one with jury access. Use the README command with output `reports/run/report.md` and attach the existing generated `reports/report.md`. The local upload copy `dist/reqcheck-demo-3m04s.mp4` adds the CLI command and report location to the original recording. Verified 184.02 s, audio, subtitles and full decode. Amir controls jury access, video sharing and form submission.
+
 ## Numes check (2026-11-27 late)
 
 - Numes endpoint `https://api.numes.ai/api/v1` is reachable from this network; key in ignored `.env` only. Tiny prompt to `nvidia/nemotron-3-ultra-550b-a55b:free` answered in 12.4 s at zero cost; `deepseek/deepseek-v4.1-flash:free` returned 429 (provider capacity exhausted).
