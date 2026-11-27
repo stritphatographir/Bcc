@@ -2,6 +2,12 @@
 
 Updated 2026-11-27 before submission. Owner: conductor.
 
+## Numes check (2026-11-27 late)
+
+- Numes endpoint `https://api.numes.ai/api/v1` is reachable from this network; key in ignored `.env` only. Tiny prompt to `nvidia/nemotron-3-ultra-550b-a55b:free` answered in 12.4 s at zero cost; `deepseek/deepseek-v4.1-flash:free` returned 429 (provider capacity exhausted).
+- Full sample with Nemotron free as primary and local Qwen as backup: 267 s, partial mode, 1 of 5 requests answered (both Nemotron requests hit the 90 s timeout). Free Numes models are not reliable enough for the demo. Paid `deepseek/deepseek-v4.1-flash` ($0.30/$1.20 per 1M tokens) not tried: needs Amir's approval.
+- Submission deliverables unchanged and match the previous archive byte for byte. 135 tests pass; scorer 27/30, 59/71.
+
 ## Final jury check
 
 - Compared TEKSERLOCK at `a68e925` with our `96f4d8d`. Our offline segmenter found 55 requirements and the loader recognized 34 headings on our PDF, versus 20 requirements and zero headings on their typeset PDF. A page with no extractable text disappeared from a mixed PDF without a warning. Suggested first fix: preserve PDF headings/table rows and report unread pages. Of 55 questions in our saved report, 10 link only to findings rejected during adjudication, including critical Q-04 and Q-06. Suggested next check: search the rest of the spec for an existing answer before asking. No product or submission artifact changed in this comparison.
