@@ -181,10 +181,11 @@ def _bounded_sender(resources, portal, transport):
         # Bound the whole exchange even when the server sends a slow trickle of bytes.
         with fail_after(max(0, deadline - perf_counter())):
             try:
+                timeout = httpx.Timeout(endpoint.timeout, connect=min(3.0, endpoint.timeout))
                 return await http.post(endpoint.base_url.rstrip("/") + "/chat/completions",
                                        headers={"Authorization": f"Bearer {endpoint.api_key}"},
-                                       json=payload, timeout=endpoint.timeout)
-            except httpx.TimeoutException as exc:
+                                       json=payload, timeout=timeout)
+            except (httpx.ReadTimeout, httpx.WriteTimeout, httpx.PoolTimeout) as exc:
                 raise TimeoutError from exc
 
     return lambda endpoint, payload, deadline: portal.call(send, endpoint, payload, deadline)

@@ -27,6 +27,22 @@ def ok(value):
     return httpx.Response(200, json={"choices": [{"message": {"content": '{"answer": %d}' % value}}]})
 
 
+@pytest.mark.parametrize("endpoint_timeout", [40, 1])
+def test_connection_timeout_is_separate_from_response_timeout(tmp_path, endpoint_timeout):
+    config = replace(settings(tmp_path, limit=30), timeout=endpoint_timeout)
+    async def reply(request):
+        if request.url.host == "primary":
+            timeout = request.extensions["timeout"]
+            assert timeout["connect"] == min(3, endpoint_timeout)
+            assert timeout["read"] == endpoint_timeout
+            raise httpx.ConnectTimeout("silent connection attempt")
+        return ok(2)
+    with Client(config, transport=httpx.MockTransport(reply)) as client:
+        assert client.ask("first", {}, Answer).answer == 2
+        assert client.switch_reason == "ConnectTimeout"
+        assert [run["calls"] for run in client.model_runs] == [1, 1]
+
+
 def test_concurrent_stalls_switch_once_and_cancel_primary(tmp_path):
     lock = threading.Lock()
     seen, cancelled, announced = [], [], []
