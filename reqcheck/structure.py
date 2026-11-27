@@ -31,6 +31,18 @@ DEFAULT = re.compile(r"\bпо\s+умолчанию\b", re.I)
 TOGGLE_STATE = re.compile(r"\b(?:отключ|выключ|включ|активир|деактивир)\w*", re.I)
 INITIAL = re.compile(r"\b(?:начальн|исходн)\w*", re.I)
 DEFAULT_VALUE = re.compile(r"\d|\b(?:не\s+(?:задан|установлен)\w*|без\s+значения|пуст\w*)\b", re.I)
+MONTH_RULE = re.compile(
+    r"\bмесяц(?:\s+\w+){0,2}\s+(?:определя\w*|выбира\w*)\s+по\s+дат[еы]\s+"
+    r"(?P<event>[а-яё]+(?:\s+(?!в\b|по\b|для\b|если\b)[а-яё]+){0,2})", re.I,
+)
+MONTH_NAMES = ('январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август',
+               'сентябрь', 'октябрь', 'ноябрь', 'декабрь')
+MONTH_WORDS = (r'январ\w*', r'феврал\w*', r'март\w*', r'апрел\w*', r'(?:май(?:ск\w*)?|ма[яею])',
+               r'июн\w*', r'июл\w*', r'август\w*', r'сентябр\w*', r'октябр\w*', r'ноябр\w*', r'декабр\w*')
+MONTH = re.compile(r"\b(?:" + "|".join(f'(?P<m{i}>{word})' for i, word in enumerate(MONTH_WORDS)) + r")\b", re.I)
+DATE = re.compile(r"\b(?:[1-9]|[12]\d|3[01])\s+(?:" + "|".join(MONTH_WORDS) + r")\b", re.I)
+ACCEPTANCE = re.compile(r"при[её]м|acceptance", re.I)
+MONTHLY_OUTPUT = re.compile(r"\b(?:месяц\w*|реестр\w*|сч[её]тчик\w*|период\w*|отч[её]т\w*)\b", re.I)
 
 
 def _stems(text: str) -> set[str]:
@@ -126,6 +138,40 @@ def missing_numeric_defaults(sources: list[Source], requirements: list[Requireme
     return findings
 
 
+def acceptance_month_conflicts(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
+    rules = [(s, m) for s in sources if not s.heading and (m := MONTH_RULE.search(s.text))]
+    findings = []
+    for case in sources:
+        if not case.text.startswith('|') or not any(ACCEPTANCE.search(name) for name in case.section):
+            continue
+        cells = case.text.strip('|').split('|')
+        if len(cells) != 3:
+            continue
+        initial, action, expected = cells
+        if not DATE.search(initial) or not DATE.search(action) or DATE.search(expected) or not MONTHLY_OUTPUT.search(expected):
+            continue
+        months = [{MONTH_NAMES[int(m.lastgroup[1:])] for m in MONTH.finditer(cell)} for cell in cells]
+        if not all(len(group) == 1 for group in months) or months[0] == months[1] or months[1] != months[2]:
+            continue
+        for rule, match in rules:
+            event = _stems(match['event'])
+            if rule.section[:1] != case.section[:1] or not (event & _stems(initial)) or event & _stems(action):
+                continue
+            event_month, result_month = next(iter(months[0])), next(iter(months[2]))
+            refs = [r.id for r in requirements if r.source.locator in {rule.locator, case.locator}]
+            findings.append(Finding(
+                code='acceptance-month-conflict', criterion='Согласованность', severity='critical',
+                evidence=[Evidence(locator=s.locator, quote=s.text) for s in (rule, case)],
+                explanation=f'По дате исходного события правило даёт месяц «{event_month}», '
+                            f'а приёмочный пример ожидает месяц «{result_month}», когда событие обрабатывается.',
+                fix='Согласовать, по какой дате выбирается месяц, и исправить ожидаемый результат примера.',
+                question='Какой месяц выбираем, если исходное событие и его обработка пришлись на разные месяцы?',
+                requirements=refs, scope='set', agent='structure',
+            ))
+            break
+    return findings
+
+
 def review_structure(sources: list[Source], requirements: list[Requirement]) -> list[Finding]:
     return (happy_path_diagrams(sources) + duplicated_rules(sources, requirements)
-            + missing_numeric_defaults(sources, requirements))
+            + missing_numeric_defaults(sources, requirements) + acceptance_month_conflicts(sources, requirements))
