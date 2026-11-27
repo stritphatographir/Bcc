@@ -1,3 +1,4 @@
+import json
 import re
 from collections import defaultdict
 
@@ -18,6 +19,25 @@ FIELD_TYPES = {
     "object": "object", "array": "array",
 }
 STATUS = r"[1-5]\d{2}"
+STATUS_START = re.compile(rf"^[#*\s]*({STATUS})\b(?:[*.\s]|$)")
+VALIDATION = re.compile(r"\b(?:проверьте|неверн\w*|некоррект\w*|недопуст\w*|валидац\w*|invalid|validation)\b", re.I)
+INPUT = re.compile(r"\b(?:параметр\w*|ввод\w*|запрос\w*|input|parameter\w*|payload)\b", re.I)
+FORMAT = re.compile(r"\b(?:синтаксис\w*|формат\w*|syntax|format|malformed)\b", re.I)
+
+
+def _validation_error_example(line: Source) -> bool:
+    try:
+        body = json.loads(line.text.strip().strip('`'))
+    except ValueError:
+        return False
+    if not isinstance(body, dict):
+        return False
+    is_error = body.get('success') is False or any(
+        str(body.get(key, '')).casefold() in {'error', 'failed', 'failure'} for key in ('status', 'result')
+    )
+    return is_error and any(
+        isinstance(body.get(key), str) and VALIDATION.search(body[key]) for key in ('message', 'error', 'detail')
+    )
 
 
 def _fields(lines: list[Source]) -> dict[str, tuple[str, Source]]:
@@ -78,6 +98,25 @@ def review_api(sources: list[Source], requirements: list[Requirement]) -> list[F
         statuses = roles["statuses"]
         if not statuses:
             continue
+        invalid_request = next((line for line in statuses if (match := STATUS_START.match(line.text))
+                                and match[1] in {'400', '422'} and VALIDATION.search(line.text)
+                                and INPUT.search(line.text)), None)
+        if invalid_request:
+            error_code = STATUS_START.match(invalid_request.text)[1]
+            success_headings = {line.section: line for line in statuses if line.heading
+                                and (match := STATUS_START.match(line.text)) and match[1].startswith('2')}
+            for line in statuses:
+                heading = success_headings.get(line.section)
+                if heading is None or not _validation_error_example(line):
+                    continue
+                if FORMAT.search(invalid_request.text) and not FORMAT.search(line.text):
+                    continue
+                success_code = STATUS_START.match(heading.text)[1]
+                add('api-validation-status-conflict', [heading, line, invalid_request],
+                    f'Для ошибки проверки входных данных показан ответ HTTP {success_code}, '
+                    f'но для неверных параметров указан HTTP {error_code}. Условие выбора кода не описано.',
+                    'Задать единый код для ошибки проверки или явно разделить условия возврата двух ответов.',
+                    f'Какой код получит клиент при недопустимом значении поля: {success_code} или {error_code}?')
         declared = set()
         for line in statuses:
             match = re.match(rf"^[#*\s]*({STATUS})\b(?:[*.\s]|$)", line.text)
