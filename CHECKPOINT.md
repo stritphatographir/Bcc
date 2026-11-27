@@ -8,6 +8,8 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 - `70c313d`: every finding shows «Доказательство — цитата найдена дословно; агент X».
 - `3de76e3`: PDF report (reportlab + bundled DejaVu fonts, Cyrillic verified) written by the main run and by `reqcheck export`. Sample `reports/report.{md,html,pdf,docx}` rebuilt from the saved JSON; `report.json` bytes unchanged so the scorer hash holds (27/30, 59/71). 135 tests pass.
+- `c6715ef`: PDF pages without a text layer are listed in the passport («Страницы без текста … нужен OCR») instead of vanishing (gap found in the TEKSERLOCK comparison). 136 tests pass.
+- Open: 10 of 55 saved questions link only to findings rejected in adjudication; clarifier should drop questions whose findings are all rejected or answered elsewhere in the spec.
 
 ## Numes check (2026-11-27 late)
 
