@@ -1,50 +1,50 @@
 {
-  "report_sha256": "c9a785fafcb1868e340250e4b78c2bca1a7a2c8e6cdc627d3e730b0c5abf83e0",
+  "report_sha256": "dca3f949472e183bd7c0d82417093b249c2ce8b01a52b0119b4137e89540a192",
   "model": "gemini-3.5-flash-lite",
   "measured_on": "2026-11-27",
   "total_defects": 30,
   "profiles": [
     {
       "name": "Детерминированные правила",
-      "matched_defects": 15,
-      "true_positives": 33,
+      "matched_defects": 19,
+      "true_positives": 37,
       "false_positives": 0,
-      "total_findings": 33
+      "total_findings": 37
     },
     {
       "name": "+ критики, один голос",
-      "matched_defects": 23,
-      "true_positives": 55,
+      "matched_defects": 27,
+      "true_positives": 59,
       "false_positives": 12,
-      "total_findings": 67
+      "total_findings": 71
     },
     {
       "name": "+ симулятор",
-      "matched_defects": 23,
-      "true_positives": 55,
+      "matched_defects": 27,
+      "true_positives": 59,
       "false_positives": 12,
-      "total_findings": 67
+      "total_findings": 71
     },
     {
       "name": "+ голосование, три голоса",
-      "matched_defects": 17,
-      "true_positives": 38,
+      "matched_defects": 21,
+      "true_positives": 42,
       "false_positives": 2,
-      "total_findings": 40
+      "total_findings": 44
     },
     {
       "name": "+ сверка цитат, три голоса",
-      "matched_defects": 17,
-      "true_positives": 38,
+      "matched_defects": 21,
+      "true_positives": 42,
       "false_positives": 2,
-      "total_findings": 40
+      "total_findings": 44
     },
     {
       "name": "Финальный отчёт: один голос со сверкой цитат",
-      "matched_defects": 23,
-      "true_positives": 55,
+      "matched_defects": 27,
+      "true_positives": 59,
       "false_positives": 12,
-      "total_findings": 67
+      "total_findings": 71
     }
   ]
 }
