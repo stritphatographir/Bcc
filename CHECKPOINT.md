@@ -5,6 +5,7 @@ Updated 2026-11-27 before submission. Owner: conductor.
 ## Final jury check
 
 - Clean Windows clone, Python 3.13: dependency check passed. Plain `pytest` initially failed to import the project in 19 modules. Setting the pytest import path to the repository root let all 98 tests pass.
+- Checked the jury README against the scored JSON and video. The quick start now writes to `reports/run/`, preserving the scored report. Corrected the model attribution, analysis time and instructions for finding the same example in a new run.
 
 ## Final fixes (2026-11-27 evening, conductor: Claude in user session)
 
@@ -18,10 +19,10 @@ Updated 2026-11-27 before submission. Owner: conductor.
 
 ## Handoff
 
-- Current submission report: Gemini `gemini-3.5-flash-lite`, agent version `e18312c`, full analysis, zero failed checks, 73 requirements, 71 findings, 55 questions, 25 simulated scenarios. All 71 findings cited exact source text. Recall 27/30 (90.0%), precision 59/71 (83.1%), misses G13, G16, G25. Final Markdown assembly took 1.05 s using 20 cached Gemini responses. The Qwen video below is a separate run.
+- Current submission report: Gemini `gemini-3.5-flash-lite`, agent version `e18312c`, full analysis, zero failed checks, 73 requirements, 71 findings, 55 questions, 25 simulated scenarios. All 71 findings cited exact source text. Recall 27/30 (90.0%), precision 59/71 (83.1%), misses G13, G16, G25. The passport records 0.22 s for analysis using 20 cached Gemini responses. The Qwen video below is a separate run.
 - Updated benchmark used the same segmentation throughout. Rules 19/30 and 37/37; + critics 27/30 and 59/71; + simulator 27/30 and 59/71; + three votes 21/30 and 42/44; + citation verification 21/30 and 42/44. The accepted changes did not alter any of the 31 findings on the independent sample. Kept one vote for the submission report.
 - Edge browser QA passed upload, eight stage events, two D-036 highlights, linked Q-02 with related lines, all tabs, and full recheck. The exported JSON contained the answer. Six live Gemini responses produced two follow-up findings with no failed stage. See `docs/demo.md` for the verified live example.
-- Latest demo preflight: the tracked video and report are present; the scorer confirms 25/30 recall and 78/101 precision for the adjudicated report. The current shell has no `python` on PATH; bundled Python runs the scorer but does not include pytest. Earlier clean-venv test results are recorded below.
+- The earlier Qwen demo used a different report, scoring 25/30 recall and 78/101 precision.
 - Main repository: stritphatographir/Bcc. GitHub has one branch, no PRs, issues or commit comments at the preflight check.
 - Deliverables: `examples/requirements.md`, `reports/report.md` (also HTML, JSON and trace), `docs/demo.mp4`. The original file matches the organizer's SHA-256: e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381.
 - The Russian video runs 2:46.52 with narration and selectable subtitles. It demonstrates D-101 ? Q-06, the answer, recheck, trace, tests, verdict and benchmark. See `docs/demo.md` for cue points and defense notes.

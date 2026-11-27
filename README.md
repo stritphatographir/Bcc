@@ -6,9 +6,10 @@
 
 ## Демонстрация для жюри
 
-Для живого показа откройте D-036 в отчёте Gemini. Правило относит операцию к месяцу
+В сохранённом отчёте Gemini найдите D-036. Правило относит операцию к месяцу
 исходного события, а приёмочный тест ждёт изменения счётчика следующего месяца.
-Из D-036 откройте Q-02, уточните правило и запустите перепроверку.
+С ним связан вопрос Q-02. Для перепроверки с ответом загрузите документ в веб-демо
+и выберите вопрос из нового прогона. Номера выводов и вопросов могут измениться.
 
 В записи с Qwen показан другой пример. Ф-3 запрещает второй push за месяц, а Ф-4
 предписывает отправить его после смены порога и нового достижения. Симулятор выводит обе цитаты.
@@ -77,9 +78,9 @@ LLM_MODEL=qwen3:8b
 LLM_API_KEY=
 ```
 
-Конкурсный отчёт в `reports/` получен на локальной Qwen (`swift-1.5-iq3_s`,
-`LLM_BASE_URL=http://monster-server:8080/v1`): Gemini был недоступен из сети
-разработки. Для этой модели по умолчанию включены компактный ответ, тайм-аут 150 секунд
+Конкурсный отчёт в `reports/` получен на Gemini `gemini-3.5-flash-lite`.
+Для видеодемо использована локальная Qwen (`swift-1.5-iq3_s`,
+`LLM_BASE_URL=http://monster-server:8080/v1`). Для этой конфигурации включены компактный ответ, тайм-аут 150 секунд
 и три голоса критиков. `REQCHECK_CRITIC_VOTES=1` запускает одного критика на задачу.
 Согласие в отчёте показывает долю голосов за вывод. После голосования цитаты снова
 проходят сверку.
@@ -87,11 +88,12 @@ LLM_API_KEY=
 ## Запуск (одна команда)
 
 ```bash
-python -m reqcheck examples/requirements.md -o reports/report.md
+python -m reqcheck examples/requirements.md -o reports/run/report.md
 ```
 
-Отчёт пишется в `reports/report.md`, `reports/report.html`, `reports/report.json`.
-Журнал `reports/report.trace.jsonl` показывает этапы, хеши запросов, время, попадания кэша
+Новый отчёт пишется в `reports/run/` в файлы `report.md`, `report.html` и `report.json`.
+Команда оценки использует сохранённый конкурсный отчёт `reports/report.json`.
+Журнал `reports/run/report.trace.jsonl` показывает этапы, хеши запросов, время, попадания кэша
 и токены, если провайдер их указал.
 В консоль (`stderr`) печатаются этапы работы агентов. Если модель недоступна, агент
 выдаёт отчёт только с правилами линтера и помечает это в паспорте как «Только правила».
@@ -100,7 +102,7 @@ python -m reqcheck examples/requirements.md -o reports/report.md
 перепроверяет затронутые требования и пишет диалог в отчёт:
 
 ```bash
-python -m reqcheck examples/requirements.md -o reports/report.md --interactive
+python -m reqcheck examples/requirements.md -o reports/run/interactive.md --interactive
 ```
 
 ## Что внутри отчёта
@@ -192,7 +194,7 @@ pytest
 
 Markdown занял 77,34 с при первом вызове Gemini и ещё 4,05 с при полном
 повторе с кэшем после ответа 429. PDF занял 55,29 с, независимый пример —
-67,45 с. Финальный Markdown собран за 1,05 с из 20 сохранённых ответов.
+67,45 с. В паспорте финального отчёта указаны 0,22 с на анализ с 20 ответами из кэша.
 В [более раннем прогоне Qwen без кэша](eval/runs/qwen-cold.json) Markdown занял 195 с.
 
 Паспорт `reports/report.md` показывает «Запросы к модели в этом прогоне — 0»: отчёт
@@ -200,8 +202,7 @@ Markdown занял 77,34 с при первом вызове Gemini и ещё 4
 вызовами модели без кэша сохранён в `eval/runs/qwen-cold.json` (20 запросов к Qwen).
 
 Видео `docs/demo.mp4` записано на локальной модели Qwen (recall 25/30). Отправленный
-отчёт построен моделью Gemini `gemini-3.5-flash-lite` (recall 27/30). Код агента тот же,
-отличается только модель.
+отчёт построен моделью Gemini `gemini-3.5-flash-lite` (recall 27/30).
 
 CLI и `eval.score` всегда печатают в UTF-8, чтобы консоль Windows не падала на кириллице.
 
@@ -248,8 +249,8 @@ prioritized clarifying questions, summary and verdict. Every finding carries a v
 quote and a locator; an Evidence Verifier drops findings whose quote is not in the source.
 Put `GEMINI_API_KEY` from https://aistudio.google.com/apikey into `.env` (default model
 `gemini-3.8-flash`, override with `LLM_MODEL`; 429/5xx are retried with backoff) or
-point `LLM_BASE_URL`/`LLM_API_KEY` at any OpenAI-compatible endpoint, including a local
-model. Run: `python -m reqcheck examples/requirements.md -o reports/report.md`
+set `LLM_BASE_URL`, `LLM_MODEL` and optionally `LLM_API_KEY` for another OpenAI-compatible
+endpoint. Run: `python -m reqcheck examples/requirements.md -o reports/run/report.md`
 (MD + HTML + JSON). `--interactive` asks clarifying questions and re-checks. `pytest`
 runs offline with a mocked LLM.
 
