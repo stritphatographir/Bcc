@@ -74,6 +74,8 @@ def render_markdown(result: Analysis) -> str:
         out.append("- Происхождение ответов — все ответы модели в этом прогоне получены из кэша")
     if p.llm_error:
         out.append("- Модель недоступна — " + literal(p.llm_error))
+    if p.unread_pages:
+        out.append("- Страницы без текста (не проверены, нужен OCR) — " + ", ".join(map(str, p.unread_pages)))
     if p.failed_agents:
         out.append("- Проверки без ответа — " + literal(", ".join(p.failed_agents)))
     if p.switch_reason:

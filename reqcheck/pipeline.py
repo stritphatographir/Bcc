@@ -16,7 +16,7 @@ from .findings import Finding
 from .fintech import review_fintech
 from .linter import lint
 from .llm import Client, LLMError
-from .loader import load
+from .loader import load, unread_pages
 from .qa import QA, build_qa
 from .quality import Quality, score_quality
 from .segmenter import Requirement, segment
@@ -50,6 +50,7 @@ class Passport(BaseModel):
     model_runs: list[ModelRun] = Field(default_factory=list)
     dropped: int
     failed_agents: list[str]
+    unread_pages: list[int] = Field(default_factory=list)
     mode: str
 
 
@@ -151,7 +152,7 @@ def analyze(path: Path, settings: Settings, *,
         started=started, finished=datetime.now(timezone.utc), calls=client.calls,
         cache_hits=client.hits, responses=client.responses - client.hits,
         llm_error=client.offline or "", dropped=dropped, failed_agents=failed, mode=mode,
-        switch_reason=getattr(client, "switch_reason", ""),
+        switch_reason=getattr(client, "switch_reason", ""), unread_pages=unread_pages(path),
         model_runs=getattr(client, "model_runs", []),
     )
     qa = build_qa(requirements, findings, simulation, sources, follow_up)

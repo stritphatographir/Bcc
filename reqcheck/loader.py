@@ -24,7 +24,7 @@ def _blocks(path):
             yield f"строка {number}", line
     elif extension == ".pdf":
         for page_number, page in enumerate(PdfReader(path).pages, 1):
-            for number, line in enumerate(page.extract_text().splitlines(), 1):
+            for number, line in enumerate((page.extract_text() or "").splitlines(), 1):
                 yield f"страница {page_number}, строка {number}", line
     elif extension == ".docx":
         doc = Document(path)
@@ -56,6 +56,14 @@ def _blocks(path):
             yield f"HTML, блок {number}", text
     else:
         raise ValueError(f"Формат {extension or 'без расширения'} не поддерживается.")
+
+
+def unread_pages(path: Path) -> list[int]:
+    """PDF pages without extractable text (scans, images): they are not checked and must be reported."""
+    if path.suffix.lower() != ".pdf":
+        return []
+    return [number for number, page in enumerate(PdfReader(path).pages, 1)
+            if not (page.extract_text() or "").strip()]
 
 
 def load(path: Path) -> list[Source]:
